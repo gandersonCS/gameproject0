@@ -49,7 +49,7 @@ public class MoonRockSprite
     }
 
     /// <summary>
-    /// Loads the ball's texture
+    /// Loads the rocks's texture
     /// </summary>
     /// <param name="contentManager">The content manager to use</param>
     public void LoadContent(ContentManager contentManager)
@@ -58,7 +58,7 @@ public class MoonRockSprite
     }
 
     /// <summary>
-    /// Updates the ball
+    /// Updates the rock
     /// </summary>
     /// <param name="gameTime">An object representing time in the game</param>
     public void Update(GameTime gameTime)

@@ -119,7 +119,7 @@ campaignButton = new MenuButtonSprite(new Vector2(leftMargin, startingY)) { Text
     // Move each rock
 foreach (var rock in rocks) rock.Update(gameTime);
 
-// 1. Detect Rock vs. Rock collisions
+//Detect Rock vs. Rock collisions
 for (int i = 0; i < rocks.Length; i++) 
 {
     for(int j = i + 1; j < rocks.Length; j++)
@@ -129,7 +129,7 @@ for (int i = 0; i < rocks.Length; i++)
             rocks[i].Colliding = true;
             rocks[j].Colliding = true;
 
-            // 1. Find the distance and direction between them
+            //Find the distance and direction between them
             Vector2 collisionAxis = rocks[i].Center - rocks[j].Center;
             float distance = collisionAxis.Length();
 
@@ -142,7 +142,7 @@ for (int i = 0; i < rocks.Length; i++)
 
             collisionAxis.Normalize();
 
-            // 2. PHYSICALLY PUSH THEM APART (Fixes the spawning trap)
+            // 2. PHYSICALLY PUSH THEM APART
             float overlap = (rocks[i].Mass + rocks[j].Mass) - distance;
             if (overlap > 0)
             {
@@ -175,8 +175,8 @@ for (int i = 0; i < rocks.Length; i++)
     }
 }
 
+
 //Detect Rock vs. Player collisions
-// 2. Detect Rock vs. Player collisions
 foreach (var rock in rocks)
 {
     if (rock.CollidesWith(player)) 
@@ -193,7 +193,7 @@ foreach (var rock in rocks)
         //Find the direction pointing away from the rock towards the player
         Vector2 knockbackDir = new Vector2(player.position.X - rock.Center.X, player.position.Y - rock.Center.Y);
         
-        //Normalize it (make it a length of 1 so we just have the raw direction)
+        //Normalize it
         if (knockbackDir != Vector2.Zero) 
             knockbackDir.Normalize();
             

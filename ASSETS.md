@@ -6,4 +6,6 @@ Planet pngs created by StumpyStrust of OpenGameArt[https://opengameart.org/conte
 
 All fonts from Fontspace[https://www.fontspace.com/category/futuristic]: Aquire by Sesohq, Robot Heroes by HAWTPIXEL
 
+Content/ball.png - provided by the MonoGame documentation examples in the public domain
+
 Debug assistance from Gemini
