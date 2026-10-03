@@ -4,6 +4,8 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Content;
 
 
@@ -37,6 +39,11 @@ namespace gameproject0
         public string Text { get; set; } = "";
         public Color TextColor { get; set; } = Color.White;
 
+        private SoundEffect _hoverSound;
+        private SoundEffect _clickSound;
+
+        private bool _isHovered = false;
+
         private SpriteFont buttonFont;
         /// <summary>
         /// constructor for the button
@@ -56,6 +63,9 @@ namespace gameproject0
             texture = content.Load<Texture2D>("futureui1");
             buttonFont = content.Load<SpriteFont>("robotheroes");
             bounds = new Rectangle((int)position.X, (int)position.Y, texture.Width, texture.Height);
+            _hoverSound = content.Load<SoundEffect>("Click_Standard_05");
+            _clickSound = content.Load<SoundEffect>("Click_Heavy_00");
+            
         }
 
         /// <summary>
@@ -76,18 +86,30 @@ namespace gameproject0
             //Setting bounds for screen
             bounds = new Rectangle((int)position.X, (int)position.Y, actualWidth, actualHeight);
             //Hover check for mouse button
-            if (bounds.Contains(mousePosition))
-            {
-                Color = Color.CornflowerBlue;
-                Scale = new Vector2(.25f, .22f);
+if (bounds.Contains(mousePosition))
+{
+    Color = Color.CornflowerBlue;
+    Scale = new Vector2(.25f, .22f);
+    
+    // Only play the sound if it wasn't already hovered last frame
+    if (!_isHovered)
+    {
+        _hoverSound.Play();
+        _isHovered = true;
+    }
 
-                // 3. Check for CLICK while hovering
-                if (currentMouseState.LeftButton == ButtonState.Pressed && priorMouseState.LeftButton == ButtonState.Released)
-                {
-                    // TODO: click logic for button
-                    OnClick?.Invoke();
-                }
-            }
+    // 3. Check for CLICK while hovering
+    if (currentMouseState.LeftButton == ButtonState.Pressed && priorMouseState.LeftButton == ButtonState.Released)
+    {
+        OnClick?.Invoke();
+        _clickSound.Play();
+    }
+}
+else
+{
+    // Reset the hover state when the mouse leaves the button
+    _isHovered = false;
+}
 
             priorMouseState = currentMouseState;
         }

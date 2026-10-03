@@ -1,6 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
+
 
 namespace gameproject0;
 
@@ -18,6 +21,10 @@ MenuButtonSprite multiplayerButton;
 MenuButtonSprite optionsButton;
 
 MenuButtonSprite exitButton;
+
+SoundEffect _playSound;
+Song _menu;
+Song _background; 
 
 private float gameTimer = 0f;
 private bool started;
@@ -71,7 +78,7 @@ private Player player;
     int verticalSpacing = 75;
         menuButtons = new MenuButtonSprite[]
         {
-campaignButton = new MenuButtonSprite(new Vector2(leftMargin, startingY)) { Text = "CAMPAIGN", OnClick = () => started = true},
+campaignButton = new MenuButtonSprite(new Vector2(leftMargin, startingY)) { Text = "CAMPAIGN", OnClick = () => {started = true; MediaPlayer.Play(_background);}},
     multiplayerButton = new MenuButtonSprite(new Vector2(leftMargin, startingY + verticalSpacing)) { Text = "MULTIPLAYER" },
     optionsButton = new MenuButtonSprite(new Vector2(leftMargin, startingY + (verticalSpacing * 2))) { Text = "OPTIONS" },
     exitButton = new MenuButtonSprite(new Vector2(leftMargin, startingY + (verticalSpacing * 3))) { Text = "EXIT(Press ESC)", OnClick = () => Exit()}
@@ -94,6 +101,11 @@ campaignButton = new MenuButtonSprite(new Vector2(leftMargin, startingY)) { Text
         foreach (var but in menuButtons) but.LoadContent(Content);
         titleFont = Content.Load<SpriteFont>("aquire");
         buttonFont = Content.Load<SpriteFont>("robotheroes");
+        _playSound = Content.Load<SoundEffect>("cg1");
+        _menu = Content.Load<Song>("promise");
+        _background = Content.Load<Song>("out");
+        MediaPlayer.IsRepeating = true;
+        MediaPlayer.Play(_menu);
     }
 
     /// <summary>
@@ -103,15 +115,18 @@ campaignButton = new MenuButtonSprite(new Vector2(leftMargin, startingY)) { Text
     protected override void Update(GameTime gameTime)
     {
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-        Exit();
+        {_playSound.Play();
+        Exit();}
 
     if (started)
     {
         player.Update(gameTime);
+
         gameTimer += (float)gameTime.ElapsedGameTime.TotalSeconds; 
     }
     else
     {
+      
         foreach(var but in menuButtons) but.Update(gameTime);
         planet.Update(gameTime, GraphicsDevice.Viewport.Width);
     }
