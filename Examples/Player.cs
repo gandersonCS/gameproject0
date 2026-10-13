@@ -221,6 +221,6 @@ if (position.Y >= groundLevel)
     
 
     var source = new Rectangle(xPos, yPos, 50, 50);
-        spriteBatch.Draw(texture, position, source, Color, 0, new Vector2(64, 64), 2f, spriteEffects, 0);
+        spriteBatch.Draw(texture, position, source, Color, 0, new Vector2(64, 64), .25f, spriteEffects, 0);
     }
 }

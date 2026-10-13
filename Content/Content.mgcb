@@ -68,6 +68,19 @@
 /processorParam:Version=3.8.5.1
 /build:arial.spritefont
 
+#begin background.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/processorParam:Version=3.8.5.1
+/build:background.png
+
 #begin ball.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -100,20 +113,6 @@
 /processorParam:Quality=Best
 /processorParam:Version=3.8.5.1
 /build:cg1.wav
-
-#begin cg1.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/processorParam:Version=3.8.5.1
-/build:cg1.wav
-
-#begin Click_Heavy_00.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/processorParam:Version=3.8.5.1
-/build:Click_Heavy_00.wav
 
 #begin Click_Heavy_00.wav
 /importer:WavImporter
@@ -206,19 +205,25 @@
 /processorParam:Version=3.8.5.1
 /build:Click_Standard_05.wav
 
-#begin Click_Standard_05.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/processorParam:Version=3.8.5.1
-/build:Click_Standard_05.wav
-
 #begin flaunch.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /processorParam:Version=3.8.5.1
 /build:flaunch.wav
+
+#begin foreground.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/processorParam:Version=3.8.5.1
+/build:foreground.png
 
 #begin futureui1.png
 /importer:TextureImporter
@@ -259,7 +264,7 @@
 /processorParam:Version=3.8.5.1
 /build:M484SpaceSoldier.png
 
-#begin M484SpaceSoldier.png
+#begin midground.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -270,7 +275,7 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /processorParam:Version=3.8.5.1
-/build:M484SpaceSoldier.png
+/build:midground.png
 
 #begin noShadow.png
 /importer:TextureImporter
@@ -333,7 +338,6 @@
 /processorParam:Quality=Best
 /processorParam:Version=3.8.5.1
 /build:shots/cg1.wav;cg1.wav
-
 
 #begin shots/pistol.wav
 /importer:WavImporter

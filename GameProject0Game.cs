@@ -9,31 +9,33 @@ namespace gameproject0;
 
 public class GameProject0Game : Game
 {
-    
+
     private GraphicsDeviceManager graphics;
     private SpriteBatch spriteBatch;
-    
+
+    private Camera2D camera;
     PlanetSprite planet;
     private SpriteFont titleFont;
     private SpriteFont buttonFont;
     MenuButtonSprite campaignButton;
-MenuButtonSprite multiplayerButton;
-MenuButtonSprite optionsButton;
+    MenuButtonSprite multiplayerButton;
+    MenuButtonSprite optionsButton;
 
-MenuButtonSprite exitButton;
+    MenuButtonSprite exitButton;
 
-SoundEffect _playSound;
-Song _menu;
-Song _background; 
+    SoundEffect _playSound;
+    Song _menu;
+    Song _backgroundMusic;
 
-private float gameTimer = 0f;
-private bool started;
+    private float gameTimer = 0f;
+    private bool started;
 
-private Player player;
+    private Player player;
+    private Texture2D _foreground;
+    private Texture2D _midground;
+    private Texture2D _background;
 
     private MenuButtonSprite[] menuButtons;
-    private MoonRockSprite[] rocks;
-
     /// <summary>
     /// A game demonstrating collision detection
     /// </summary>
@@ -53,32 +55,17 @@ private Player player;
     {
         // TODO: Add your initialization logic here
         System.Random random = new System.Random();
-        rocks = new MoonRockSprite[random.Next(5, 10)];
- for (int i = 0; i < rocks.Length; i++)
-{
-    rocks[i] = new MoonRockSprite(); 
-    
-    // Pick a random location
-    Vector2 randomSpawn = new Vector2(random.Next(50, 680), random.Next(50, 310));
-    
-    rocks[i].Center = randomSpawn;
-    rocks[i].Position = randomSpawn; // FORCE the drawing position to match!
-    
-    float vx = (float)(random.NextDouble() * 100 - 500);
-    float vy = (float)(random.NextDouble() * 100 - 500);
-    rocks[i].Velocity = new Vector2(vx, vy);
-    rocks[i].Mass = random.Next(50, 100); 
-}
+        camera = new Camera2D();
         player = new Player();
         planet = new PlanetSprite();
         int leftMargin = 50;
         //Space between button list and title
-    int startingY = 150;
-    //Space between button
-    int verticalSpacing = 75;
+        int startingY = 150;
+        //Space between button
+        int verticalSpacing = 75;
         menuButtons = new MenuButtonSprite[]
         {
-campaignButton = new MenuButtonSprite(new Vector2(leftMargin, startingY)) { Text = "CAMPAIGN", OnClick = () => {started = true; MediaPlayer.Play(_background);}},
+campaignButton = new MenuButtonSprite(new Vector2(leftMargin, startingY)) { Text = "CAMPAIGN", OnClick = () => {started = true; MediaPlayer.Play(_backgroundMusic);}},
     multiplayerButton = new MenuButtonSprite(new Vector2(leftMargin, startingY + verticalSpacing)) { Text = "MULTIPLAYER" },
     optionsButton = new MenuButtonSprite(new Vector2(leftMargin, startingY + (verticalSpacing * 2))) { Text = "OPTIONS" },
     exitButton = new MenuButtonSprite(new Vector2(leftMargin, startingY + (verticalSpacing * 3))) { Text = "EXIT(Press ESC)", OnClick = () => Exit()}
@@ -96,16 +83,19 @@ campaignButton = new MenuButtonSprite(new Vector2(leftMargin, startingY)) { Text
         spriteBatch = new SpriteBatch(GraphicsDevice);
         player.LoadContent(Content);
         planet.LoadContent(Content);
-        foreach (var r in rocks) r.LoadContent(Content);
+
         // TODO: use this.Content to load your game content here
         foreach (var but in menuButtons) but.LoadContent(Content);
         titleFont = Content.Load<SpriteFont>("aquire");
         buttonFont = Content.Load<SpriteFont>("robotheroes");
         _playSound = Content.Load<SoundEffect>("cg1");
         _menu = Content.Load<Song>("promise");
-        _background = Content.Load<Song>("out");
+        _backgroundMusic = Content.Load<Song>("out");
         MediaPlayer.IsRepeating = true;
         MediaPlayer.Play(_menu);
+        _foreground = Content.Load<Texture2D>("foreground");
+        _midground = Content.Load<Texture2D>("midground");
+        _background = Content.Load<Texture2D>("background");
     }
 
     /// <summary>
@@ -115,111 +105,35 @@ campaignButton = new MenuButtonSprite(new Vector2(leftMargin, startingY)) { Text
     protected override void Update(GameTime gameTime)
     {
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-        {_playSound.Play();
-        Exit();}
-
-    if (started)
-    {
-        player.Update(gameTime);
-
-        gameTimer += (float)gameTime.ElapsedGameTime.TotalSeconds; 
-    }
-    else
-    {
-      
-        foreach(var but in menuButtons) but.Update(gameTime);
-        planet.Update(gameTime, GraphicsDevice.Viewport.Width);
-    }
-
-    // Move each rock
-foreach (var rock in rocks) rock.Update(gameTime);
-
-//Detect Rock vs. Rock collisions
-for (int i = 0; i < rocks.Length; i++) 
-{
-    for(int j = i + 1; j < rocks.Length; j++)
-    {
-        if (rocks[i].CollidesWith(rocks[j]))
         {
-            rocks[i].Colliding = true;
-            rocks[j].Colliding = true;
-
-            //Find the distance and direction between them
-            Vector2 collisionAxis = rocks[i].Center - rocks[j].Center;
-            float distance = collisionAxis.Length();
-
-            // Failsafe: if they spawn on the exact same pixel, fake a distance to prevent a crash
-            if (distance == 0) 
-            {
-                collisionAxis = new Vector2(1, 0);
-                distance = 1;
-            }
-
-            collisionAxis.Normalize();
-
-            // 2. PHYSICALLY PUSH THEM APART
-            float overlap = (rocks[i].Mass + rocks[j].Mass) - distance;
-            if (overlap > 0)
-            {
-                // Push each rock away by half the overlap + 1 pixel to guarantee they break contact
-                rocks[i].Center += collisionAxis * (overlap / 2f + 1f);
-                rocks[j].Center -= collisionAxis * (overlap / 2f + 1f);
-            }
-
-            // 3. Calculate bounce trajectory (with clamped Dot product to prevent NaN errors)
-            float dot = MathHelper.Clamp(Vector2.Dot(collisionAxis, Vector2.UnitX), -1f, 1f);
-            float angle = (float)System.Math.Acos(dot);
-
-            float m0 = rocks[i].Mass;
-            float m1 = rocks[j].Mass;
-
-            Vector2 u0 = Vector2.Transform(rocks[i].Velocity, Matrix.CreateRotationZ(angle));
-            Vector2 u1 = Vector2.Transform(rocks[j].Velocity, Matrix.CreateRotationZ(angle));
-
-            Vector2 v0;
-            Vector2 v1;
-            
-            v0.X = ((m0 - m1) / (m0 + m1)) * u0.X + ((2 * m1) / (m0 + m1)) * u1.X;
-            v1.X = ((2 * m0) / (m0 + m1)) * u0.X + ((m1 - m0) / (m0 + m1)) * u1.X; 
-            v0.Y = u0.Y;
-            v1.Y = u1.Y;
-
-            rocks[i].Velocity = Vector2.Transform(v0, Matrix.CreateRotationZ(-angle));
-            rocks[j].Velocity = Vector2.Transform(v1, Matrix.CreateRotationZ(-angle));
+            _playSound.Play();
+            Exit();
         }
-    }
-}
+
+        if (started)
+        {
+            player.Update(gameTime);
+
+            //Wall and floor bounds for Player
+            player.position.X = MathHelper.Clamp(player.position.X, 0, 5120);
+            player.position.Y = MathHelper.Clamp(player.position.Y, 0, 500);
+
+            camera.Position = player.position;
+            gameTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+        }
+        else
+        {
+
+            foreach (var but in menuButtons) but.Update(gameTime);
+            planet.Update(gameTime, GraphicsDevice.Viewport.Width);
+        }
 
 
-//Detect Rock vs. Player collisions
-foreach (var rock in rocks)
-{
-    if (rock.CollidesWith(player)) 
-    {
-        rock.Colliding = true;
-        //player.Color = Color.Red;
-        //Step the rock back so it doesn't get stuck inside the player
-        rock.Center -= rock.Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
-        
-        // everse the rock's velocity so it bounces off the player's box
-        rock.Velocity *= -1; 
-        
-        //Knockback logic
-        //Find the direction pointing away from the rock towards the player
-        Vector2 knockbackDir = new Vector2(player.position.X - rock.Center.X, player.position.Y - rock.Center.Y);
-        
-        //Normalize it
-        if (knockbackDir != Vector2.Zero) 
-            knockbackDir.Normalize();
-            
-        //Push the player away
-        player.position += knockbackDir * 50f; 
 
-        
-    }
-}
 
-    base.Update(gameTime);
+
+
+        base.Update(gameTime);
     }
 
     /// <summary>
@@ -229,31 +143,86 @@ foreach (var rock in rocks)
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.Navy);
+        Vector2 screenCenter = new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f);
 
-        // TODO: Add your drawing code here
-        
-spriteBatch.Begin();
-    
-    if (started)
-    {
-        //Draw only the player and the timer
-        player.Draw(gameTime, spriteBatch);
-        foreach(var rock in rocks) rock.Draw(gameTime, spriteBatch);
-        //Formats the float to 2 decimal places
-        string timerText = $"Time: {gameTimer:F2}"; 
-        spriteBatch.DrawString(titleFont, timerText, new Vector2(2, 2), Color.Red);
-    }
-    else
-    {
-        //Draw the planet, buttons, and title for the menu
-        planet.Draw(gameTime, spriteBatch);
-        foreach (var but in menuButtons) but.Draw(gameTime, spriteBatch);
-        
-        spriteBatch.DrawString(titleFont, "GAME TITLE", new Vector2(2, 2), Color.Gold);
-    }
-    
-    spriteBatch.End();
+        //Parallax movement and transformation
 
-    base.Draw(gameTime);
+
+        if (started)
+        {
+            // 1. Camera Clamping
+            // This locks the camera to the player, but forces the camera to stop scrolling
+            // if the player goes further right than 5120.
+            float cameraTargetX = MathHelper.Clamp(player.position.X, 300, 5120);
+            
+            // 2. Calculate the offset (using scale 1 to match the player's matrix)
+            float offsetX = 300 - cameraTargetX; 
+
+            // BATCH 1: Background (Stretched horizontally)
+            Matrix bgTransform = Matrix.CreateScale(40, 5, 1) * Matrix.CreateTranslation(offsetX * 0.333f, 0, 0);
+            spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: bgTransform);
+            spriteBatch.Draw(_background, Vector2.Zero, Color.White);
+            spriteBatch.End();
+
+            // BATCH 2: Midground (NOT stretched)
+            Matrix mgTransform = Matrix.CreateScale(15, 15, 1) * Matrix.CreateTranslation(offsetX * 0.666f, 0, 0);
+            spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: mgTransform);
+            spriteBatch.Draw(_midground, Vector2.Zero, Color.White);
+            spriteBatch.End();
+
+            // BATCH 3: Foreground (NOT stretched)
+            Matrix fgTransform = Matrix.CreateScale(10, 10, 1) * Matrix.CreateTranslation(offsetX, 0, 0);
+            spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: fgTransform);
+            spriteBatch.Draw(_foreground, Vector2.Zero, Color.White);
+            spriteBatch.End();
+
+            // BATCH 3.5: Player 
+            Matrix playerTransform = Matrix.CreateScale(4, 4, 1) * Matrix.CreateTranslation(offsetX, 0, 0);
+            spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: playerTransform);
+            player.Draw(gameTime, spriteBatch);
+            spriteBatch.End();
+
+            // BATCH 4: HUD
+            spriteBatch.Begin();
+            string timerText = $"Time: {gameTimer:F2}";
+            string playerPosition = $"\nPlayer X: {player.position.X}\nPlayer Y: {player.position.Y}";
+            spriteBatch.DrawString(
+                titleFont,
+                timerText,
+                new Vector2(10, 10),
+                Color.Red,
+                0f,
+                Vector2.Zero,
+                0.5f,
+                SpriteEffects.None,
+                0f
+            );
+                        spriteBatch.DrawString(
+                titleFont,
+                playerPosition,
+                new Vector2(10, 10),
+                Color.Red,
+                0f,
+                Vector2.Zero,
+                0.5f,
+                SpriteEffects.None,
+                0f
+            );
+            spriteBatch.End();
+        }
+        else
+        {
+            //Draw the planet, buttons, and title for the menu
+            spriteBatch.Begin();
+            planet.Draw(gameTime, spriteBatch);
+            foreach (var but in menuButtons) but.Draw(gameTime, spriteBatch);
+
+            spriteBatch.DrawString(titleFont, "GAME TITLE", new Vector2(2, 2), Color.Gold);
+            spriteBatch.End();
+        }
+
+
+
+        base.Draw(gameTime);
     }
 }
