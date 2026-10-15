@@ -30,18 +30,20 @@ public class Player
 
     private Texture2D texture;
 
-    public Vector2 position = new Vector2(500, groundLevel);
+// 1. Start the player at a much smaller Y-coordinate
+    public Vector2 position = new Vector2(0, 100);
 
     private Vector2 velocity = new Vector2(0,0);
 
-    //How fast the player is pulled down
-private float gravity = 800f; 
+    // How fast the player is pulled down
+    private float gravity = 800f; 
 
-//The upward burst of speed 
-private float jumpSpeed = -400f; 
-private bool isJumping = false;
-//The Y position of thed floor
-static private float groundLevel = Constants.GAME_HEIGHT; 
+    // The upward burst of speed 
+    private float jumpSpeed = -200f; 
+    private bool isJumping = false;
+    
+    // 2. Change the floor to match the pixel art level instead of the monitor height
+    static private float groundLevel = 100; 
 
     private bool flipped;
 
@@ -79,7 +81,7 @@ static private float groundLevel = Constants.GAME_HEIGHT;
         // if (gamePadState.ThumbSticks.Left.X > 0) flipped = false;
 
         // Apply keyboard movement
-if ((keyboardState.IsKeyDown(Keys.Up) || keyboardState.IsKeyDown(Keys.W)) && !isJumping)
+if ((keyboardState.IsKeyDown(Keys.Up) || keyboardState.IsKeyDown(Keys.W) || keyboardState.IsKeyDown(Keys.Space)) && !isJumping)
 {
     velocity.Y = jumpSpeed; // Apply upward force
     isJumping = true;       // Prevent infinite double jumps
@@ -105,7 +107,7 @@ if (position.Y >= groundLevel)
     // Stop moving downward
     velocity.Y = 0f;          
 }
-        velocity.X = 5f;
+        velocity.X = 2f;
         // if (keyboardState.IsKeyDown(Keys.Down) || keyboardState.IsKeyDown(Keys.S)) position += new Vector2(0, 1);
         if (keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A))
         { 

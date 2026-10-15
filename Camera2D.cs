@@ -10,10 +10,10 @@ namespace gameproject0
         public Camera2D()
         {
             Position = Vector2.Zero;
-            Zoom = 1.0f;
+            Zoom = .5f;
         }
 
-        // This matrix is what satisfies your SpriteBatch Transform requirement
+        
         public Matrix GetViewMatrix(Vector2 screenCenter)
         {
             return Matrix.CreateTranslation(new Vector3(-Position.X, -Position.Y, 0)) *

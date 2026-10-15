@@ -114,12 +114,20 @@ campaignButton = new MenuButtonSprite(new Vector2(leftMargin, startingY)) { Text
         {
             player.Update(gameTime);
 
-            //Wall and floor bounds for Player
-            player.position.X = MathHelper.Clamp(player.position.X, 0, 5120);
-            player.position.Y = MathHelper.Clamp(player.position.Y, 0, 500);
+        // 1. Keep player inside the physical level bounds
+        player.position.X = MathHelper.Clamp(player.position.X, 0, 5120);
 
-            camera.Position = player.position;
-            gameTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+        // 2. Lock the camera to the player, but fix the Y position so the screen doesn't bounce
+        camera.Position = new Vector2(player.position.X, 100f);
+
+        // 3. Clamp the camera so it stops scrolling near the edges!
+        // 300f is the left screen boundary, 4800f is the right screen boundary.
+        camera.Position = new Vector2(
+            MathHelper.Clamp(camera.Position.X, 300f, 4800f),
+            camera.Position.Y
+        );
+
+        gameTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
         }
         else
         {
@@ -150,65 +158,53 @@ campaignButton = new MenuButtonSprite(new Vector2(leftMargin, startingY)) { Text
 
         if (started)
         {
-            // 1. Camera Clamping
-            // This locks the camera to the player, but forces the camera to stop scrolling
-            // if the player goes further right than 5120.
-            float cameraTargetX = MathHelper.Clamp(player.position.X, 300, 5120);
-            
-            // 2. Calculate the offset (using scale 1 to match the player's matrix)
-            float offsetX = 300 - cameraTargetX; 
+            // 1. Set the global camera zoom (Scale)
+        // Adjust this up or down to change the size of everything on screen uniformly
+        camera.Zoom = 5.0f; 
 
-            // BATCH 1: Background (Stretched horizontally)
-            Matrix bgTransform = Matrix.CreateScale(40, 5, 1) * Matrix.CreateTranslation(offsetX * 0.333f, 0, 0);
-            spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: bgTransform);
-            spriteBatch.Draw(_background, Vector2.Zero, Color.White);
-            spriteBatch.End();
+        // BATCH 1: Background (Moves at 10% speed for deep parallax)
+        Matrix bgMatrix = Matrix.CreateTranslation(new Vector3(-camera.Position.X * 0.1f, -camera.Position.Y, 0)) *
+                          Matrix.CreateScale(camera.Zoom) *
+                          Matrix.CreateTranslation(new Vector3(screenCenter.X, screenCenter.Y, 0));
+        
+        spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: bgMatrix);
+        // Using a Rectangle stretches the image to cover the entire 5120 width of your level!
+        spriteBatch.Draw(_background, new Rectangle(0, 0, 5120, _background.Height), Color.White);
+        spriteBatch.End();
 
-            // BATCH 2: Midground (NOT stretched)
-            Matrix mgTransform = Matrix.CreateScale(15, 15, 1) * Matrix.CreateTranslation(offsetX * 0.666f, 0, 0);
-            spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: mgTransform);
-            spriteBatch.Draw(_midground, Vector2.Zero, Color.White);
-            spriteBatch.End();
+        // BATCH 2: Midground (Moves at 50% speed)
+        Matrix mgMatrix = Matrix.CreateTranslation(new Vector3(-camera.Position.X * 0.5f, -camera.Position.Y, 0)) *
+                          Matrix.CreateScale(camera.Zoom) *
+                          Matrix.CreateTranslation(new Vector3(screenCenter.X, screenCenter.Y, 0));
+                          
+        spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: mgMatrix);
+        spriteBatch.Draw(_midground, new Rectangle(0, 0, 5120, _midground.Height), Color.White);
+        spriteBatch.End();
 
-            // BATCH 3: Foreground (NOT stretched)
-            Matrix fgTransform = Matrix.CreateScale(10, 10, 1) * Matrix.CreateTranslation(offsetX, 0, 0);
-            spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: fgTransform);
-            spriteBatch.Draw(_foreground, Vector2.Zero, Color.White);
-            spriteBatch.End();
+        // BATCH 3: Foreground and Player (Moves 100% with the camera)
+        // We use your Camera2D's GetViewMatrix here so the player perfectly syncs with the camera
+        spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: camera.GetViewMatrix(screenCenter));
+        
+        spriteBatch.Draw(_foreground, new Rectangle(0, 0, 5120, _foreground.Height), Color.White);
+        player.Draw(gameTime, spriteBatch);
+        
+        spriteBatch.End();
 
-            // BATCH 3.5: Player 
-            Matrix playerTransform = Matrix.CreateScale(4, 4, 1) * Matrix.CreateTranslation(offsetX, 0, 0);
-            spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: playerTransform);
-            player.Draw(gameTime, spriteBatch);
-            spriteBatch.End();
-
-            // BATCH 4: HUD
-            spriteBatch.Begin();
-            string timerText = $"Time: {gameTimer:F2}";
-            string playerPosition = $"\nPlayer X: {player.position.X}\nPlayer Y: {player.position.Y}";
-            spriteBatch.DrawString(
-                titleFont,
-                timerText,
-                new Vector2(10, 10),
-                Color.Red,
-                0f,
-                Vector2.Zero,
-                0.5f,
-                SpriteEffects.None,
-                0f
-            );
-                        spriteBatch.DrawString(
-                titleFont,
-                playerPosition,
-                new Vector2(10, 10),
-                Color.Red,
-                0f,
-                Vector2.Zero,
-                0.5f,
-                SpriteEffects.None,
-                0f
-            );
-            spriteBatch.End();
+        // BATCH 4: HUD
+        spriteBatch.Begin();
+        string timerText = $"Time: {gameTimer:F2}\nPlayer X: {player.position.X}\nPlayer Y: {player.position.Y}";
+        spriteBatch.DrawString(
+            titleFont,
+            timerText,
+            new Vector2(10, 10),
+            Color.Red,
+            0f,
+            Vector2.Zero,
+            0.5f,
+            SpriteEffects.None,
+            0f
+        );
+        spriteBatch.End();
         }
         else
         {
