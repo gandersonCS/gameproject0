@@ -22,7 +22,8 @@ public class GameProject0Game : Game
     MenuButtonSprite optionsButton;
 
     MenuButtonSprite exitButton;
-
+    private Texture2D _pixel;
+    private Gun playerGun;
     SoundEffect _playSound;
     Song _menu;
     Song _backgroundMusic;
@@ -65,12 +66,12 @@ public class GameProject0Game : Game
         int verticalSpacing = 75;
         menuButtons = new MenuButtonSprite[]
         {
-campaignButton = new MenuButtonSprite(new Vector2(leftMargin, startingY)) 
-    { 
-        Text = "CAMPAIGN", 
-        OnClick = () => 
+campaignButton = new MenuButtonSprite(new Vector2(leftMargin, startingY))
+    {
+        Text = "CAMPAIGN",
+        OnClick = () =>
         {
-            started = true; 
+            started = true;
             MediaPlayer.Play(_backgroundMusic);
             
             // Generate and add the rain the exact moment the button is clicked
@@ -86,9 +87,9 @@ Components.Add(rain);
         if (started)
         {
             RainParticleSystem rain = new RainParticleSystem(this, new Rectangle(100, -20, 500, 10));
-        Components.Add(rain);
+            Components.Add(rain);
         }
-                
+
 
         base.Initialize();
     }
@@ -114,6 +115,10 @@ Components.Add(rain);
         _foreground = Content.Load<Texture2D>("foreground");
         _midground = Content.Load<Texture2D>("midground");
         _background = Content.Load<Texture2D>("background");
+        _pixel = new Texture2D(GraphicsDevice, 1, 1);
+        _pixel.SetData(new[] { Color.White });
+
+        playerGun = new Gun(_pixel);
     }
 
     /// <summary>
@@ -132,20 +137,45 @@ Components.Add(rain);
         {
             player.Update(gameTime);
 
-        // 1. Keep player inside the physical level bounds
-        player.position.X = MathHelper.Clamp(player.position.X, 0, 5120);
+            // 1. Trap the player at exactly 1000
+            player.position.X = MathHelper.Clamp(player.position.X, 16f, 1000f);
 
-        // 2. Lock the camera to the player, but fix the Y position so the screen doesn't bounce
-        camera.Position = new Vector2(player.position.X, 100f);
+            float scale = 6.0f;
+            float screenCenterW = GraphicsDevice.Viewport.Width / 2f;
 
-        // 3. Clamp the camera so it stops scrolling near the edges!
-        // 300f is the left screen boundary, 4800f is the right screen boundary.
-        camera.Position = new Vector2(
-            MathHelper.Clamp(camera.Position.X, 300f, 4800f),
-            camera.Position.Y
-        );
+            // 2. The dynamic deadzone (Ensure you deleted the hardcoded 'float deadzone = 50f;')
+            float deadzone = (screenCenterW / scale) - 20f;
 
-        gameTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (player.position.X > camera.Position.X + deadzone)
+                camera.Position = new Vector2(player.position.X - deadzone, 100f);
+            else if (player.position.X < camera.Position.X - deadzone)
+                camera.Position = new Vector2(player.position.X + deadzone, 100f);
+
+            // 3. Stop the camera from scrolling past the 1000 pixel mark
+            float minCameraX = screenCenterW / scale;
+            float maxCameraX = 1000f - minCameraX;
+
+            camera.Position = new Vector2(
+                MathHelper.Clamp(camera.Position.X, minCameraX, maxCameraX),
+                100f
+            );
+
+            Vector2 screenCenter = new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f);
+
+            // 1. Sync the offset math EXACTLY with the formula in your Draw method
+            float offsetX = screenCenter.X - (camera.Position.X * scale);
+            float floorScreenPosition = GraphicsDevice.Viewport.Height - 50f;
+            float offsetY = floorScreenPosition - (100f * scale);
+
+            // 2. Convert screen mouse coordinates into accurate world coordinates
+            MouseState mouse = Mouse.GetState();
+            Vector2 worldMousePosition = new Vector2(
+                (mouse.X - offsetX) / scale,
+                (mouse.Y - offsetY) / scale
+            );
+
+            // 3. Update the gun with the correct targeted mouse position
+            playerGun.Update(gameTime, player.position, worldMousePosition);
         }
         else
         {
@@ -176,46 +206,71 @@ Components.Add(rain);
 
         if (started)
         {
-        camera.Zoom = 5.0f; 
+            // 1. SCALES
+            float scale = 6.0f;           // Uniform scale for player, foreground, and midground
 
-    // We need the minimum camera X again to align the parallax layers perfectly to the left edge
-    float minCameraX = (GraphicsDevice.Viewport.Width / 2f) / camera.Zoom;
 
-    // BATCH 1: Background (10% speed)
-    // Calculate parallax: start at minCameraX, and only apply the 0.1f speed to movement beyond that point
-    float bgCamX = minCameraX + ((camera.Position.X - minCameraX) * 0.1f);
-    
-    Matrix bgMatrix = Matrix.CreateTranslation(new Vector3(-bgCamX, -camera.Position.Y, 0)) *
-                      Matrix.CreateScale(camera.Zoom) *
-                      Matrix.CreateTranslation(new Vector3(screenCenter.X, screenCenter.Y, 0));
-    
-    spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: bgMatrix);
-    spriteBatch.Draw(_background, new Rectangle(0, 0, 5120, _background.Height), Color.Salmon);
-    spriteBatch.End();
+            // 2. CAMERA MATH
+            // Delete the 'scaledPlayerX' and 'MathHelper.Clamp' lines here!
+            // Calculate the visual offset using the actual Camera object from your Update loop:
+            float offsetX = screenCenter.X - (camera.Position.X * scale);
 
-    // BATCH 2: Midground (50% speed)
-    float mgCamX = minCameraX + ((camera.Position.X - minCameraX) * 0.5f);
-    
-    Matrix mgMatrix = Matrix.CreateTranslation(new Vector3(-mgCamX, -camera.Position.Y, 0)) *
-                      Matrix.CreateScale(camera.Zoom) *
-                      Matrix.CreateTranslation(new Vector3(screenCenter.X, screenCenter.Y, 0));
-                      
-    spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: mgMatrix);
-    spriteBatch.Draw(_midground, new Rectangle(0, 0, 5120, _midground.Height), Color.DarkRed);
-    spriteBatch.End();
+            // Y-Axis Anchor
+            float floorScreenPosition = GraphicsDevice.Viewport.Height - 50f;
+            float offsetY = floorScreenPosition - (100f * scale);
 
-    // BATCH 3: Foreground and Player (100% speed - uses the normal camera matrix)
-    spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: camera.GetViewMatrix(screenCenter));
-    spriteBatch.Draw(_foreground, new Rectangle(0, 0, 5120, _foreground.Height), Color.Red);
-    player.Draw(gameTime, spriteBatch);
-    spriteBatch.End();
+            // BATCH 1: Background 
+            // FIX: Changed the Y translation from 'offsetY' to '0' so it anchors to the top of the screen
+            Matrix bgTransform = Matrix.CreateScale(scale, scale, 1) * Matrix.CreateTranslation(offsetX * 0.33f, 0, 0);
 
-    // BATCH 4: HUD
-    spriteBatch.Begin();
-    string timerText = $"Time: {gameTimer:F2}\nPlayer X: {player.position.X}\nPlayer Y: {player.position.Y}";
-    spriteBatch.DrawString(titleFont, timerText, new Vector2(10, 10), Color.Red, 0f, Vector2.Zero, 0.5f, SpriteEffects.None, 0f);
-    spriteBatch.End();}
-    
+            // 1. Change PointClamp to PointWrap
+            spriteBatch.Begin(samplerState: SamplerState.PointWrap, transformMatrix: bgTransform);
+
+            // 2. Add a massive destination rectangle (e.g., 5120 width) so it loops instead of cutting off
+            spriteBatch.Draw(_background, Vector2.Zero, new Rectangle(0, 0, 1000, _background.Height), Color.DarkOrange);
+
+            spriteBatch.End();
+
+            // BATCH 2: Midground (Tiled to exactly 1000 pixels)
+            Matrix mgTransform = Matrix.CreateScale(scale, scale, 1) * Matrix.CreateTranslation(offsetX * 0.66f, offsetY, 0);
+            spriteBatch.Begin(samplerState: SamplerState.PointWrap, transformMatrix: mgTransform);
+
+            // Set the Rectangle width to 1000 instead of the background's width
+            spriteBatch.Draw(_midground, Vector2.Zero, new Rectangle(0, 0, 1000, _midground.Height), Color.DarkRed);
+            spriteBatch.End();
+
+            // BATCH 3 & 3.5: Foreground and Player (Tiled to exactly 1000 pixels)
+            Matrix fgTransform = Matrix.CreateScale(scale, scale, 1) * Matrix.CreateTranslation(offsetX, offsetY, 0);
+            spriteBatch.Begin(samplerState: SamplerState.PointWrap, transformMatrix: fgTransform);
+
+            spriteBatch.Draw(_foreground, Vector2.Zero, new Rectangle(0, 0, 1000, _foreground.Height), Color.DarkSalmon);
+            player.Draw(gameTime, spriteBatch);
+            playerGun.Draw(spriteBatch);
+            spriteBatch.End();
+
+            spriteBatch.Begin();
+            // Draws a dark grey rectangle starting exactly at the floor's screen position and filling the bottom 100 pixels
+            spriteBatch.Draw(_pixel, new Rectangle(0, (int)floorScreenPosition, GraphicsDevice.Viewport.Width, 100), Color.SlateGray);
+            spriteBatch.End();
+
+
+            // BATCH 4: HUD
+            spriteBatch.Begin();
+            string timerText = $"Time: {gameTimer:F2}";
+            string playerPosition = $"\nPlayer X: {player.position.X}\nPlayer Y: {player.position.Y}";
+            spriteBatch.DrawString(
+                titleFont,
+                timerText + playerPosition,
+                new Vector2(10, 10),
+                Color.Red,
+                0f,
+                Vector2.Zero,
+                0.5f,
+                SpriteEffects.None,
+                0f
+            );
+            spriteBatch.End();
+        }
         else
         {
             //Draw the planet, buttons, and title for the menu

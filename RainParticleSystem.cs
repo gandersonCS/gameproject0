@@ -13,7 +13,7 @@ namespace gameproject0
 
         public bool IsRaining {get; set;} = true;
 
-        public RainParticleSystem(Game game, Rectangle source) : base(game, 5000)
+        public RainParticleSystem(Game game, Rectangle source) : base(game, 6000)
         {
             _source = source;
         }

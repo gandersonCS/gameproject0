@@ -4,6 +4,8 @@ Content/futureui1.png created by bart of OpenGameArt[https://opengameart.org/con
 
 Planet pngs created by StumpyStrust of OpenGameArt[https://opengameart.org/content/beta-6] and released under the public domain
 
+Warp City background sprites created by ansimuz of OpenGameArt[https://opengameart.org/content/warped-city] and released under the public domain
+
 All fonts from Fontspace[https://www.fontspace.com/category/futuristic]: Aquire by Sesohq, Robot Heroes by HAWTPIXEL
 
 Content/ball.png - provided by the MonoGame documentation examples in the public domain
