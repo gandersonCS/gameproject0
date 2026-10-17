@@ -206,8 +206,9 @@ Components.Add(rain);
 
         if (started)
         {
-            // 1. SCALES
-            float scale = 6.0f;           // Uniform scale for player, foreground, and midground
+            // 1. SCALES           
+            // Uniform scale for player, foreground, and midground
+            float scale = 6.0f;
 
 
             // 2. CAMERA MATH
@@ -220,7 +221,6 @@ Components.Add(rain);
             float offsetY = floorScreenPosition - (100f * scale);
 
             // BATCH 1: Background 
-            // FIX: Changed the Y translation from 'offsetY' to '0' so it anchors to the top of the screen
             Matrix bgTransform = Matrix.CreateScale(scale, scale, 1) * Matrix.CreateTranslation(offsetX * 0.33f, 0, 0);
 
             // 1. Change PointClamp to PointWrap
@@ -231,7 +231,7 @@ Components.Add(rain);
 
             spriteBatch.End();
 
-            // BATCH 2: Midground (Tiled to exactly 1000 pixels)
+            // BATCH 2: Midground 
             Matrix mgTransform = Matrix.CreateScale(scale, scale, 1) * Matrix.CreateTranslation(offsetX * 0.66f, offsetY, 0);
             spriteBatch.Begin(samplerState: SamplerState.PointWrap, transformMatrix: mgTransform);
 
@@ -239,14 +239,26 @@ Components.Add(rain);
             spriteBatch.Draw(_midground, Vector2.Zero, new Rectangle(0, 0, 1000, _midground.Height), Color.DarkRed);
             spriteBatch.End();
 
-            // BATCH 3 & 3.5: Foreground and Player (Tiled to exactly 1000 pixels)
-            Matrix fgTransform = Matrix.CreateScale(scale, scale, 1) * Matrix.CreateTranslation(offsetX, offsetY, 0);
-            spriteBatch.Begin(samplerState: SamplerState.PointWrap, transformMatrix: fgTransform);
-
-            spriteBatch.Draw(_foreground, Vector2.Zero, new Rectangle(0, 0, 1000, _foreground.Height), Color.DarkSalmon);
-            player.Draw(gameTime, spriteBatch);
-            playerGun.Draw(spriteBatch);
-            spriteBatch.End();
+            // BATCH 3 & 3.5: Foreground and Player 
+// BATCH 3 & 3.5: Foreground, Player, and Bullets
+    Matrix fgTransform = Matrix.CreateScale(scale, scale, 1) * Matrix.CreateTranslation(offsetX, offsetY, 0);
+    
+    // Updated to require AlphaBlend 
+    spriteBatch.Begin(
+        sortMode: SpriteSortMode.Deferred, 
+        blendState: BlendState.AlphaBlend, 
+        samplerState: SamplerState.PointWrap, 
+        depthStencilState: null, 
+        rasterizerState: null, 
+        effect: null, 
+        transformMatrix: fgTransform
+    );
+    
+    spriteBatch.Draw(_foreground, Vector2.Zero, new Rectangle(0, 0, 1000, _foreground.Height), Color.Red);
+    player.Draw(gameTime, spriteBatch); 
+    playerGun.Draw(spriteBatch); 
+    
+    spriteBatch.End();
 
             spriteBatch.Begin();
             // Draws a dark grey rectangle starting exactly at the floor's screen position and filling the bottom 100 pixels
