@@ -1,17 +1,60 @@
-﻿Content/M484SpaceSolder.png created by Master484 of OpenGameArt[https://opengameart.org/content/space-soldier-m484-games] and released under the public domain
+# Assets
 
-Content/futureui1.png created by bart of OpenGameArt[https://opengameart.org/content/sci-fi-ui-panels] and released under the public domain
+All assets used in this project, with their provenance and license.
+Content assets live in `MechaHorde.Content/Assets/`.
 
-Planet pngs created by StumpyStrust of OpenGameArt[https://opengameart.org/content/beta-6] and released under the public domain
+## Textures
 
-Warp City background sprites created by ansimuz of OpenGameArt[https://opengameart.org/content/warped-city] and released under the public domain
+- `Textures/Sprites/M484SpaceSoldier.png` - created by Master484 of OpenGameArt
+  [https://opengameart.org/content/space-soldier-m484-games](https://opengameart.org/content/space-soldier-m484-games),
+  released under the public domain
+- `Textures/Menu/futureui1.png` - created by bart of OpenGameArt
+  [https://opengameart.org/content/sci-fi-ui-panels](https://opengameart.org/content/sci-fi-ui-panels),
+  released under the public domain
+- `Textures/Menu/planet1.png`, `Textures/Menu/Beta 6.png`, `Textures/Menu/noShadow.png` - created by
+  StumpyStrust of OpenGameArt [https://opengameart.org/content/beta-6](https://opengameart.org/content/beta-6),
+  released under the public domain
+- `Textures/Level/background.png`, `Textures/Level/midground.png`, `Textures/Level/foreground.png` -
+  Warped City, created by ansimuz of OpenGameArt
+  [https://opengameart.org/content/warped-city](https://opengameart.org/content/warped-city),
+  released under the public domain
+- `Textures/Effects/drop.png` - rain drop particle
+- `Textures/gradient.png` - procedurally generated for the CIS580 game architecture, released under
+  the public domain
 
-All fonts from Fontspace[https://www.fontspace.com/category/futuristic]: Aquire by Sesohq, Robot Heroes by HAWTPIXEL
+## Fonts
 
-Content/ball.png - provided by the MonoGame documentation examples in the public domain
+- `Fonts/LiberationSans-Regular.ttf` - Liberation Sans 2.1.5, from the Liberation Fonts project
+  [https://github.com/liberationfonts/liberation-fonts](https://github.com/liberationfonts/liberation-fonts),
+  released under the SIL Open Font License 1.1 (see `Fonts/LiberationSans-LICENSE.txt`).
+  Used by all the `.spritefont` files (`aquire`, `robotheroes`, `menufont`, `gamefont`).
+- The Aquire font (by Sesohq) and Robot Heroes font (by HAWTPIXEL), from Fontspace
+  [https://www.fontspace.com/category/futuristic](https://www.fontspace.com/category/futuristic),
+  give `aquire.spritefont` and `robotheroes.spritefont` their names.
 
-Content/promise.wav - created by hothxcc of OpenGameArt https://opengameart.org/content/promise and released under the public domain
-Content/out.wav - created by G_P of OpenGameArt https://opengameart.org/content/out and released under the public domain
-Content/shots & 4 launches - created by Michel Baradari of OpenGameArt https://opengameart.org/content/chaingun-pistol-rifle-shotgun-shots and released under creative commons
-Content/UI Sound Library - created by Little Robot Sound Factory of OpenGameArt https://opengameart.org/content/ui-sound-effects-library and released under creative commons
-Debug assistance from Gemini
+## Audio
+
+- `Audio/Music/promise.wav` - created by hothxcc of OpenGameArt
+  [https://opengameart.org/content/promise](https://opengameart.org/content/promise),
+  released under the public domain
+- `Audio/Music/out.mp3` - created by G_P of OpenGameArt
+  [https://opengameart.org/content/out](https://opengameart.org/content/out),
+  released under the public domain
+- `Audio/Sfx/Shots/*`, `Audio/Sfx/Launches/*`, `Audio/Sfx/cg1.wav` - created by Michel Baradari of
+  OpenGameArt [https://opengameart.org/content/chaingun-pistol-rifle-shotgun-shots](https://opengameart.org/content/chaingun-pistol-rifle-shotgun-shots),
+  released under Creative Commons
+- `Audio/Sfx/Click_*.wav` - UI Sound Library, created by Little Robot Sound Factory of OpenGameArt
+  [https://opengameart.org/content/ui-sound-effects-library](https://opengameart.org/content/ui-sound-effects-library),
+  released under Creative Commons
+- `Audio/Sfx/player_join.wav`, `Audio/Sfx/player_leave.wav` - procedurally generated for the CIS580
+  game architecture, released under the public domain
+
+## Code
+
+- The CIS580 game architecture [https://github.com/ksu-cis-580/game-architecture](https://github.com/ksu-cis-580/game-architecture)
+- Debug assistance from Gemini
+
+## Application icon
+
+- `MechaHorde/Icon.ico`, `MechaHorde/Icon.bmp` - the default icons from the MonoGame project
+  templates [https://monogame.net](https://monogame.net), released under the Microsoft Public License (Ms-PL).

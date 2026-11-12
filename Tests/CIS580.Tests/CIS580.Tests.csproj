@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Tests for the CIS580 library -->
+  <PropertyGroup>
+    <RootNamespace>CIS580.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CIS580\CIS580.Core\CIS580.Core.csproj" />
+    <ProjectReference Include="..\..\CIS580\CIS580.MonoGame\CIS580.MonoGame.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Supplies MonoGame's implementation at runtime (the library only references the platform-neutral API) -->
+    <PackageReference Include="MonoGame.Framework.DesktopGL" />
+  </ItemGroup>
+</Project>

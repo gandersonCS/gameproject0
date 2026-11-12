@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    CIS580.MonoGame: library code that depends on MonoGame (input, UI, flow, audio, views).
+    It references the platform-neutral MonoGame.Framework.Native package, so it works with any
+    MonoGame platform; the game project chooses the actual platform (e.g. DesktopGL).
+  -->
+  <PropertyGroup>
+    <RootNamespace>CIS580</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CIS580.Core\CIS580.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.Native" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="CIS580.Tests" />
+  </ItemGroup>
+</Project>

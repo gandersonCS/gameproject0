@@ -1,0 +1,36 @@
+<Project>
+  <!--
+    Central package management: every NuGet package version used by the solution lives here,
+    so projects reference packages WITHOUT a Version attribute.
+
+    To upgrade MonoGame, change MonoGameVersion. The content pipeline tool packages
+    (MonoGame.Tool.* / MonoGame.Library.*) must match the versions that
+    MonoGame.Framework.Content.Pipeline depends on; a mismatch shows up as an NU1605
+    "package downgrade" error, which names the version required.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <MonoGameVersion>3.8.6</MonoGameVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Runtime: the platform-neutral reference used by libraries, and the platform backend used by the game -->
+    <PackageVersion Include="MonoGame.Framework.Native" Version="$(MonoGameVersion)" />
+    <PackageVersion Include="MonoGame.Framework.DesktopGL" Version="$(MonoGameVersion)" />
+
+    <!-- Content pipeline (used only by the Content Builder project) -->
+    <PackageVersion Include="MonoGame.Framework.Content.Pipeline" Version="$(MonoGameVersion)" />
+    <PackageVersion Include="MonoGame.Library.FreeType" Version="2.13.2.5" />
+    <PackageVersion Include="MonoGame.Library.MojoShader" Version="1.0.0.7" />
+    <PackageVersion Include="MonoGame.Tool.Basisu" Version="2.0.2.3" />
+    <PackageVersion Include="MonoGame.Tool.Crunch" Version="1.0.4.8" />
+    <PackageVersion Include="MonoGame.Tool.Dxc" Version="1.9.2607.1" />
+    <PackageVersion Include="MonoGame.Tool.FFmpeg" Version="7.0.0.11" />
+    <PackageVersion Include="MonoGame.Tool.FFprobe" Version="7.0.0.11" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Testing -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageVersion Include="xunit.v3" Version="4.0.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
+  </ItemGroup>
+</Project>

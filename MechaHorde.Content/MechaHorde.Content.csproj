@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    MechaHorde.Content: the MonoGame Content Builder for this game.
+    It is a small console program (see Builder.cs) that turns the files in Assets/ into .xnb
+    content. The game project runs it automatically before compiling, through
+    CIS580/Build/CIS580.Content.targets.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.Content.Pipeline" />
+    <PackageReference Include="MonoGame.Framework.Native" PrivateAssets="All" />
+    <!--
+      The pipeline's native tools must be referenced directly (not just transitively): they copy
+      their executables (e.g. ffprobe, used to import audio) into the output via build targets
+      that NuGet only runs for direct references.
+    -->
+    <PackageReference Include="MonoGame.Library.FreeType" />
+    <PackageReference Include="MonoGame.Library.MojoShader" />
+    <PackageReference Include="MonoGame.Tool.Basisu" />
+    <PackageReference Include="MonoGame.Tool.Crunch" />
+    <PackageReference Include="MonoGame.Tool.Dxc" />
+    <PackageReference Include="MonoGame.Tool.FFmpeg" />
+    <PackageReference Include="MonoGame.Tool.FFprobe" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Assets are inputs to the builder, not files to compile or copy -->
+    <None Remove="Assets\**" />
+  </ItemGroup>
+</Project>

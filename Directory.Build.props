@@ -1,0 +1,10 @@
+<Project>
+  <!--
+    Settings shared by every project in this solution.
+    MSBuild automatically imports this file into any project at or below this folder.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+</Project>

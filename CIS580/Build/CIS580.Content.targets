@@ -1,0 +1,72 @@
+<Project>
+  <!--
+    Builds a game's content with a MonoGame Content Builder project before the game compiles,
+    and places the resulting .xnb files in the game's output Content folder.
+
+    Usage, in the game's .csproj:
+
+      <PropertyGroup>
+        <MonoGamePlatform>DesktopGL</MonoGamePlatform>
+        <ContentBuilderProject>..\MyGame.Content\MyGame.Content.csproj</ContentBuilderProject>
+        <!- optional: defaults to the Assets folder next to the content builder project ->
+        <ContentAssetsDirectory>..\MyGame.Content\Assets</ContentAssetsDirectory>
+      </PropertyGroup>
+      <Import Project="..\CIS580\Build\CIS580.Content.targets" />
+
+    This is adapted from the BuildContent.targets file in MonoGame's Content Builder template,
+    with these changes:
+      - The content builder is a build-order-only ProjectReference, so building just the game
+        project also restores and builds the content builder.
+      - The builder runs through `dotnet <dll>` with the configuration actually built, rather than
+        a hardcoded bin\Debug path.
+      - Paths are parameters rather than hardcoded project names.
+  -->
+
+  <PropertyGroup>
+    <!-- Path.Combine keeps the second path as-is when it is already absolute -->
+    <_CIS580ContentBuilderFullPath>$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(ContentBuilderProject)'))))</_CIS580ContentBuilderFullPath>
+    <ContentAssetsDirectory Condition="'$(ContentAssetsDirectory)' == ''">$([System.IO.Path]::GetDirectoryName('$(_CIS580ContentBuilderFullPath)'))/Assets</ContentAssetsDirectory>
+    <_CIS580ContentAssetsFullPath>$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(ContentAssetsDirectory)'))))</_CIS580ContentAssetsFullPath>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(ContentBuilderProject)' != ''">
+    <!-- Ensures the content builder is restored and built first, without referencing its assembly -->
+    <ProjectReference Include="$(ContentBuilderProject)"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      GlobalPropertiesToRemove="TargetFramework;RuntimeIdentifier" />
+    <!-- Lets IDEs know that changing an asset means the game must be rebuilt -->
+    <UpToDateCheckInput Include="$(_CIS580ContentAssetsFullPath)/**/*" />
+  </ItemGroup>
+
+  <Target Name="BuildContent" BeforeTargets="BeforeCompile" Condition="'$(ContentBuilderProject)' != ''">
+    <MSBuild Projects="$(_CIS580ContentBuilderFullPath)"
+             Targets="Build"
+             RemoveProperties="TargetFramework;RuntimeIdentifier;RuntimeIdentifiers">
+      <Output TaskParameter="TargetOutputs" ItemName="_CIS580ContentBuilderAssembly" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <_CIS580ContentOutput>$([System.IO.Path]::TrimEndingDirectorySeparator('$(ProjectDir)$(OutputPath)'))</_CIS580ContentOutput>
+      <_CIS580ContentIntermediate>$([System.IO.Path]::TrimEndingDirectorySeparator('$(ProjectDir)$(IntermediateOutputPath)'))</_CIS580ContentIntermediate>
+    </PropertyGroup>
+
+    <Exec Command="dotnet &quot;@(_CIS580ContentBuilderAssembly)&quot; build -p $(MonoGamePlatform) -s &quot;$(_CIS580ContentAssetsFullPath)&quot; -o &quot;$(_CIS580ContentOutput)&quot; -i &quot;$(_CIS580ContentIntermediate)&quot;"
+          WorkingDirectory="$(MSBuildProjectDirectory)"
+          CustomErrorRegularExpression="\[E\] .+"
+          CustomWarningRegularExpression="\[W\] .+" />
+  </Target>
+
+  <!-- Mobile and Apple platforms need built content registered as bundled assets -->
+  <Target Name="AddGeneratedContentAssets" AfterTargets="BuildContent">
+    <ItemGroup>
+      <_CIS580GeneratedAsset Include="$(ProjectDir)$(OutputPath)Content/**/*" />
+      <AndroidAsset Include="@(_CIS580GeneratedAsset)" Condition="'$(MonoGamePlatform)' == 'Android'">
+        <Link>Content/%(_CIS580GeneratedAsset.RecursiveDir)%(_CIS580GeneratedAsset.Filename)%(_CIS580GeneratedAsset.Extension)</Link>
+      </AndroidAsset>
+      <BundledResource Include="@(_CIS580GeneratedAsset)" Condition="'$(MonoGamePlatform)' == 'MacOSX' Or '$(MonoGamePlatform)' == 'iOS'">
+        <Link>Content/%(_CIS580GeneratedAsset.RecursiveDir)%(_CIS580GeneratedAsset.Filename)%(_CIS580GeneratedAsset.Extension)</Link>
+      </BundledResource>
+    </ItemGroup>
+  </Target>
+</Project>

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Graphics="Microsoft.Xna.Framework.Content.Pipeline.Graphics">
+	<Asset Type="Graphics:FontDescription">
+		<!-- A font file next to this .spritefont (bundled so content builds on every OS; see LiberationSans-LICENSE.txt) -->
+		<FontName>LiberationSans-Regular.ttf</FontName>
+		<Size>32</Size>
+		<Spacing>2</Spacing>
+		<Style>Bold</Style>
+		<CharacterRegions>
+			<CharacterRegion>
+				<Start>&#32;</Start>
+				<End>&#126;</End>
+			</CharacterRegion>
+		</CharacterRegions>
+	</Asset>
+</XnaContent>

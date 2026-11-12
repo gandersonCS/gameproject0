@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    CIS580.Core: engine-independent library code (simulation loop, networking seams, settings).
+    This project must NOT reference MonoGame, so that it can run inside a headless server.
+  -->
+  <PropertyGroup>
+    <RootNamespace>CIS580</RootNamespace>
+  </PropertyGroup>
+</Project>
