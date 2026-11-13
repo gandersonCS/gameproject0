@@ -36,8 +36,15 @@ public sealed class GameAudio
         Audio = audio ?? throw new ArgumentNullException(nameof(audio));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
-        MenuMusic = content.Load<SoundEffect>("Audio/Music/promise");
-        GameMusic = content.Load<SoundEffect>("Audio/Music/out");
+        // Each song is cut into an intro, played once, and a loop that repeats (see the
+        // music README for where the cuts are). The pause music is one long loop.
+        MenuMusic = new MusicTrack(
+            intro: content.Load<SoundEffect>("Audio/Music/uprising_intro"),
+            loop: content.Load<SoundEffect>("Audio/Music/uprising_loop"));
+        GameMusic = new MusicTrack(
+            intro: content.Load<SoundEffect>("Audio/Music/calamity_intro"),
+            loop: content.Load<SoundEffect>("Audio/Music/calamity_loop"));
+        PauseMusic = new MusicTrack(content.Load<SoundEffect>("Audio/Music/emergent_loop"));
 
         // Gameplay sounds go on the Effects bus, which is paused along with the game
         _playerJoined = new SoundCue(audio.Effects, content.Load<SoundEffect>("Audio/Sfx/player_join"))
@@ -53,24 +60,41 @@ public sealed class GameAudio
     public AudioManager Audio { get; }
 
     /// <summary>
-    /// The music for the menus
+    /// The music for the menus: "Uprising", from its drum opening, then looping the build-up
+    /// and the quiet break after it (the heroic ending is cut)
     /// </summary>
-    public SoundEffect MenuMusic { get; }
+    public MusicTrack MenuMusic { get; }
 
     /// <summary>
-    /// The music during play
+    /// The music during play: "Calamity", from its build-up, then looping from the kick-off
     /// </summary>
-    public SoundEffect GameMusic { get; }
+    public MusicTrack GameMusic { get; }
 
     /// <summary>
-    /// Cross-fades to the menu music (if it isn't already playing)
+    /// The music on the pause menu: "Emergent"
     /// </summary>
-    public void PlayMenuMusic() => Audio.MusicPlayer.Play(MenuMusic);
+    public MusicTrack PauseMusic { get; }
+
+    /// <summary>
+    /// Cross-fades to the menu music (if it isn't already playing). The fade is short so the
+    /// opening drum hit isn't faded.
+    /// </summary>
+    public void PlayMenuMusic() => Audio.MusicPlayer.Play(MenuMusic, TimeSpan.FromSeconds(0.4));
 
     /// <summary>
     /// Cross-fades to the gameplay music (if it isn't already playing)
     /// </summary>
     public void PlayGameMusic() => Audio.MusicPlayer.Play(GameMusic);
+
+    /// <summary>
+    /// Fades the gameplay music out, holding its place, and plays the pause music
+    /// </summary>
+    public void StartPauseMusic() => Audio.MusicPlayer.Interrupt(PauseMusic, TimeSpan.FromSeconds(0.6));
+
+    /// <summary>
+    /// Fades the pause music out, and the gameplay music back in from where it was
+    /// </summary>
+    public void EndPauseMusic() => Audio.MusicPlayer.EndInterruption(TimeSpan.FromSeconds(0.6));
 
     /// <summary>
     /// Plays the sound (if any) for something that happened in the game

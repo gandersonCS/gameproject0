@@ -79,18 +79,37 @@ instances.
 ## `MusicPlayer`
 
 [`MusicPlayer`](../CIS580/CIS580.MonoGame/Audio/MusicPlayer.cs) (`audio.MusicPlayer`) plays one
-looping track on the Music bus, cross-fading when the track changes:
+track at a time on the Music bus, cross-fading when the track changes:
 
 | Method | Purpose |
 |---|---|
 | `Play(track, fade)` | Cross-fades to `track` (default 1.5 s). If the track is already playing, nothing happens, so states can call it whenever they start. |
 | `Stop(fade)` | Fades out |
-| `Duck(level, fade)` / `Unduck(fade)` | Turns the music down temporarily (the pause menu ducks to 30%) |
+| `Interrupt(track, fade)` / `EndInterruption(fade)` | Plays other music for a while; the current track fades out and holds its place, then fades back in from there (the pause menu does this) |
+| `Duck(level, fade)` / `Unduck(fade)` | Turns the music down temporarily |
+
+A track is either a plain `SoundEffect`, which loops, or a
+[`MusicTrack`](../CIS580/CIS580.MonoGame/Audio/MusicTrack.cs): an optional **intro** that plays
+once, then a **loop** that repeats. That lets a song start with its build-up without going back
+to it on every repeat:
+
+```csharp
+var battle = new MusicTrack(
+    intro: content.Load<SoundEffect>("Audio/Music/battle_intro"),
+    loop: content.Load<SoundEffect>("Audio/Music/battle_loop"));
+audio.MusicPlayer.Play(battle);
+```
+
+Cut the files so the loop begins exactly where the intro ends, and so the loop's end flows back
+into its start. The player starts the loop on the frame nearest the end of the intro, so the
+changeover can be a few milliseconds off: put the cut just before a strong beat. Tracks with the
+same intro and loop are equal, so asking again for a track that's playing doesn't restart it.
 
 Tracks are ordinary `SoundEffect`s, not MonoGame `Song`s, because `MediaPlayer` can only play
-one song at a time and so can't cross-fade. That's why the content builder builds music from
-`.wav` files as sound effects (see [Content](content.md)). WAV music is large, so keep loops
-short.
+one song at a time and so can't cross-fade. That's why the content builder builds music as sound
+effects (see [Content](content.md)): `.wav` files import that way by default, and `.mp3` or `.ogg`
+files are given the `SoundEffectProcessor` explicitly. Keep the source music in `.ogg`, which is
+small; it's built into uncompressed sound data, which uses about 10 MB of memory per minute.
 
 [`Fader`](../CIS580/CIS580.MonoGame/Audio/Fader.cs) is the small struct behind the fades: a
 level that moves toward a target at a steady rate. It's useful for your own fades too.
@@ -118,8 +137,10 @@ Leave a cue `null` for silence. Your own layers can play these too:
 [`GameAudio`](../MechaHorde/Audio/GameAudio.cs) is registered as a service in
 `LoadContent`. It:
 
-- loads the menu and game music, and offers `PlayMenuMusic()` / `PlayGameMusic()`, called by
-  `MainMenuState` and `InGameState`
+- loads the menu, game and pause music (each an intro and a loop, apart from the pause music;
+  see [`Assets/Audio/README.md`](../MechaHorde.Content/Assets/Audio/README.md)), and offers
+  `PlayMenuMusic()` / `PlayGameMusic()`, called by `MainMenuState` and `InGameState`, and
+  `StartPauseMusic()` / `EndPauseMusic()`, called by `PausedState`
 - loads the gameplay cues (on the **Effects** bus) and plays them in `OnGameEvent`, a `switch`
   over the simulation's events. `PlayerJoined` is panned toward the side of the world the player
   spawned on.
@@ -132,7 +153,8 @@ Leave a cue `null` for silence. Your own layers can play these too:
 | `MusicVolume` (0–10) | `Music.Volume` |
 | `EffectsVolume` (0–10) | `Effects.Volume` **and** `Ui.Volume` |
 
-Pausing is handled by `PausedState`. It ducks the music and, if the simulation stops, pauses the
+Pausing is handled by `PausedState`. It switches to the pause music (the gameplay music holds its
+place, and carries on from there when the game resumes) and, if the simulation stops, pauses the
 Effects bus; menu sounds on the UI bus still play. `InGameState.Exit` stops all effects so
 nothing carries over into the menus.
 

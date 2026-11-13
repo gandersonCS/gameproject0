@@ -50,7 +50,9 @@ In VS Code, open this folder and press F5 ("C#: MechaHorde Debug").
   (futureui panel buttons down the left, the gold title, the blue hover glow) and adds the
   mouse. `GameTheme` sets the fonts, colors and click sounds; `BackgroundLayer` draws the dark red
   sky and the animated planet.
-- **Music.** `GameAudio` plays `promise` in the menus and `out` during play.
+- **Music.** `GameAudio` plays "Uprising" in the menus, "Calamity" during play and "Emergent" on
+  the pause menu. The menu and gameplay songs each play an intro once, then loop their main part
+  (see `MechaHorde.Content/Assets/Audio/README.md`).
 - **Gameplay.** `InGameState` creates the `Battlefield` (the code that used to run in
   `GameProject0Game` once the campaign started) and updates it while the game isn't paused.
   `LevelView` draws it and `HudLayer` shows the timer and player position over it.

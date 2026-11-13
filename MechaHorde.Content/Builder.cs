@@ -64,6 +64,19 @@ public class Builder : ContentBuilder
         // so the gameplay music is built as a SoundEffect too
         content.Include("Audio/Music/out.mp3", new Mp3Importer(), new SoundEffectProcessor());
 
+        // Likewise .ogg imports as a Song by default. Each song is an intro and a loop (see
+        // Assets/Audio/README.md); .ogg keeps them small in the repository, and they're built
+        // into plain sound data so the loop points stay exact.
+        foreach (var track in new[]
+        {
+            "uprising_intro", "uprising_loop",   // Menu
+            "calamity_intro", "calamity_loop",   // Gameplay
+            "emergent_loop",                     // Pause menu
+        })
+        {
+            content.Include($"Audio/Music/{track}.ogg", new OggImporter(), new SoundEffectProcessor());
+        }
+
         return content;
     }
 }

@@ -43,10 +43,20 @@ Content assets live in `MechaHorde.Content/Assets/`.
 
 ## Audio
 
-- `Audio/Music/promise.wav` - created by hothxcc of OpenGameArt
+- `Audio/Music/uprising_intro.ogg`, `Audio/Music/uprising_loop.ogg` - cut from 'Uprising' by
+  Scott Buckley – released under CC-BY 4.0. www.scottbuckley.com.au
+- `Audio/Music/emergent_loop.ogg` - cut from 'Emergent' by Scott Buckley – released under
+  CC-BY 4.0. www.scottbuckley.com.au
+  [https://www.scottbuckley.com.au/library/emergent](https://www.scottbuckley.com.au/library/emergent)
+- `Audio/Music/calamity_intro.ogg`, `Audio/Music/calamity_loop.ogg` - cut from "Calamity (Epic
+  Orchestral Metal)" by Esiltir of OpenGameArt
+  [https://opengameart.org/node/74577](https://opengameart.org/node/74577),
+  released under Creative Commons Attribution 4.0 (CC-BY 4.0). (The author asks to be sent a
+  message about games that use it.)
+- `Audio/Music/promise.wav` (no longer played) - created by hothxcc of OpenGameArt
   [https://opengameart.org/content/promise](https://opengameart.org/content/promise),
   released under the public domain
-- `Audio/Music/out.mp3` - created by G_P of OpenGameArt
+- `Audio/Music/out.mp3` (no longer played) - created by G_P of OpenGameArt
   [https://opengameart.org/content/out](https://opengameart.org/content/out),
   released under the public domain
 - `Audio/Sfx/Shots/*`, `Audio/Sfx/Launches/*`, `Audio/Sfx/cg1.wav` - created by Michel Baradari of

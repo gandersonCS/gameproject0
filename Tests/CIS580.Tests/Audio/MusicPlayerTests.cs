@@ -84,4 +84,58 @@ public class MusicPlayerTests
         audio.Update(Second);
         audio.StopAll();
     }
+
+    [Fact]
+    public void TracksWithTheSameParts_AreTheSameMusic()
+    {
+        var intro = TestSounds.Silent();
+        var loop = TestSounds.Silent();
+        var audio = new AudioManager();
+        audio.MusicPlayer.Play(new MusicTrack(loop, intro), fade: TimeSpan.Zero);
+
+        audio.MusicPlayer.Play(new MusicTrack(loop, intro), fade: Second);
+
+        Assert.Equal(1f, audio.MusicPlayer.Level);   // Not restarted
+        Assert.Same(loop, audio.MusicPlayer.Current);
+        audio.StopAll();
+    }
+
+    [Fact]
+    public void Interrupt_HoldsTheTrack_AndEndInterruptionBringsItBack()
+    {
+        var audio = new AudioManager();
+        var game = new MusicTrack(TestSounds.Silent(), intro: TestSounds.Silent());
+        var pause = new MusicTrack(TestSounds.Silent());
+        audio.MusicPlayer.Play(game, fade: TimeSpan.Zero);
+
+        audio.MusicPlayer.Interrupt(pause, fade: Second);
+        audio.Update(Second);
+        Assert.Equal(pause, audio.MusicPlayer.CurrentTrack);
+        Assert.Equal(game, audio.MusicPlayer.InterruptedTrack);
+        Assert.Equal(1f, audio.MusicPlayer.Level, 0.001f);
+
+        audio.MusicPlayer.EndInterruption(fade: Second);
+        audio.Update(TimeSpan.FromSeconds(0.5));
+        Assert.Equal(game, audio.MusicPlayer.CurrentTrack);
+        Assert.Null(audio.MusicPlayer.InterruptedTrack);
+        Assert.Equal(0.5f, audio.MusicPlayer.Level, 0.001f);
+        audio.StopAll();
+    }
+
+    [Fact]
+    public void PlayingSomethingElse_ReplacesAnInterruption()
+    {
+        var audio = new AudioManager();
+        var game = new MusicTrack(TestSounds.Silent());
+        var menu = new MusicTrack(TestSounds.Silent());
+        audio.MusicPlayer.Play(game, fade: TimeSpan.Zero);
+        audio.MusicPlayer.Interrupt(new MusicTrack(TestSounds.Silent()), fade: TimeSpan.Zero);
+
+        audio.MusicPlayer.EndInterruption(fade: TimeSpan.Zero);   // As when quitting from pause...
+        audio.MusicPlayer.Play(menu, fade: TimeSpan.Zero);        // ...to the menu
+
+        Assert.Equal(menu, audio.MusicPlayer.CurrentTrack);
+        Assert.Null(audio.MusicPlayer.InterruptedTrack);
+        audio.StopAll();
+    }
 }

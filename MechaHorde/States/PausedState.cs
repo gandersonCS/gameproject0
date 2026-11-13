@@ -33,16 +33,18 @@ public sealed class PausedState : AppState
             onQuitToMenu: () => Flow.Change(new MainMenuState()),
             onExit: () => Game.Exit()));
 
-        // Turn the music down while paused. If the game stops, its sound effects pause too;
-        // menu sounds play on the separate UI bus, so they still work.
+        // Switch to the pause music; the gameplay music holds its place until the game resumes.
+        // If the game stops, its sound effects pause too; menu sounds play on the separate UI
+        // bus, so they still work.
         _audio = Game.Services.GetService<GameAudio>();
-        _audio.Audio.MusicPlayer.Duck();
+        _audio.StartPauseMusic();
         _audio.Audio.Effects.Paused = _game.PausePolicy.PausesSimulation;
     }
 
     protected override void Exit()
     {
-        _audio.Audio.MusicPlayer.Unduck();
+        // (Quitting to the menu exits this state too; the menu then replaces the music.)
+        _audio.EndPauseMusic();
         _audio.Audio.Effects.Paused = false;
     }
 }
