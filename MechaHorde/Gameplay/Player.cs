@@ -12,7 +12,7 @@ namespace MechaHorde.Gameplay;
 /// </summary>
 /// <remarks>
 /// <para>
-/// All positions and speeds are in level pixels (the Battlefield draws the level 6x).
+/// All positions and speeds are in level pixels (the Battlefield scales the level to fit the screen).
 /// <see cref="position"/> is where Sara's feet touch the ground, horizontally centred on her body.
 /// </para>
 /// <para>
@@ -77,9 +77,9 @@ public class Player
     #region Sprite layout
 
     private const int Cell = 48;
-    /// <summary>Sara's feet, within a cell</summary>
-    private static readonly Vector2 Origin = new(24, 47);
-    /// <summary>The 48px sprite is drawn at 1/3 scale: 16 level pixels, 2 screen pixels per sprite pixel</summary>
+    /// <summary>Sara's feet, within a cell: the bottom edge of her soles, so they rest exactly on the ground</summary>
+    private static readonly Vector2 Origin = new(24, 48);
+    /// <summary>The 48px sprite is drawn at 1/3 scale: 16 level pixels tall</summary>
     public const float SpriteScale = 1f / 3f;
 
     // SaraMain rows

@@ -80,19 +80,19 @@ public abstract class MenuLayer : Layer
 
     public override void Draw(GameTime gameTime)
     {
-        var viewport = Game.GraphicsDevice.Viewport;
-        float centerX = viewport.Width / 2f;
+        var screen = UiSize;
+        float centerX = screen.X / 2f;
 
         DrawBackdrop(gameTime);
 
         // Long menus scroll, rather than running off the bottom of the screen
         if (FitToScreen)
         {
-            float space = viewport.Height - Theme.MenuTop - Theme.TextFont.LineSpacing;
+            float space = screen.Y - Theme.MenuTop - Theme.TextFont.LineSpacing;
             Menu.MaxVisibleItems = Math.Max(1, (int)(space / Theme.TextFont.LineSpacing));
         }
 
-        SpriteBatch.Begin();
+        SpriteBatch.Begin(transformMatrix: UiTransform);
 
         Menu.Draw(SpriteBatch, Theme, new Vector2(centerX, Theme.MenuTop), Transition, gameTime);
 

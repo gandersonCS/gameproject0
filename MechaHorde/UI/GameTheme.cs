@@ -27,7 +27,13 @@ public static class GameTheme
         TitleColor = Color.Gold,
         TitleScale = 1f,
         TextColor = Color.White,
-        SelectedColor = Color.CornflowerBlue,
+        // Neon cyan, like the city's signs: it stands out against the red without clashing with the gold
+        SelectedColor = new Color(90, 205, 255),
+        DisabledColor = new Color(140, 120, 130),
+        // Sizes and positions are in UI units: the screen is 1080 units tall at any resolution
+        TitleTop = 110,
+        MenuTop = 260,
+        PanelPadding = new Vector2(56, 36),
 
         Sounds = new UiSoundSet
         {

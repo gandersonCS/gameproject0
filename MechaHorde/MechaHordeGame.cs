@@ -40,6 +40,7 @@ public class MechaHordeGame : Game
     private readonly AudioManager _audio;
     private GameAudio _gameAudio;
     private readonly UserSettings _settings;
+    private readonly Display _display;
 
     /// <param name="args">
     /// Command-line arguments. "--play" skips the menus and starts a game immediately,
@@ -48,6 +49,8 @@ public class MechaHordeGame : Game
     public MechaHordeGame(string[] args)
     {
         _graphics = new GraphicsDeviceManager(this);
+        // Until the display is set up (in Initialize): everything scales to whatever size the
+        // screen turns out to be, so this is only a starting point
         _graphics.PreferredBackBufferWidth = Constants.GAME_WIDTH;
         _graphics.PreferredBackBufferHeight = Constants.GAME_HEIGHT;
         Content.RootDirectory = "Content";
@@ -73,6 +76,10 @@ public class MechaHordeGame : Game
         Services.AddService(_settings.Controls);
         Services.AddService(new PausePolicy());      // Change its settings to change who can pause, etc.
 
+        // Fullscreen or a window, as the player last had it (F11 switches)
+        _display = new Display(this, _graphics, _settings.Game);
+        Services.AddService(_display);
+
         _audio = new AudioManager();
         Services.AddService(_audio);
 
@@ -92,6 +99,12 @@ public class MechaHordeGame : Game
             _flow.Change(new MainMenuState());
     }
 
+    protected override void Initialize()
+    {
+        _display.Apply();
+        base.Initialize();
+    }
+
     protected override void LoadContent()
     {
         // The game's music and sound effects
@@ -104,6 +117,7 @@ public class MechaHordeGame : Game
         // Read the input devices once per frame, before anything uses them
         _input.Update();
         _uiInput.Update(gameTime.ElapsedGameTime);
+        _display.Update();
 
         _flow.Update(gameTime);
 

@@ -30,15 +30,14 @@ public class LoadingLayer : Layer
             return;
 
         const string message = "Loading...";
-        var viewport = Game.GraphicsDevice.Viewport;
         var font = Theme.TextFont;
         var textSize = font.MeasureString(message);
-        var textPosition = (new Vector2(viewport.Width, viewport.Height) - textSize) / 2;
+        var textPosition = (UiSize - textSize) / 2;
 
-        var bar = new Rectangle((int)textPosition.X, (int)(textPosition.Y + textSize.Y + 8), (int)textSize.X, 4);
+        var bar = new Rectangle((int)textPosition.X, (int)(textPosition.Y + textSize.Y + 12), (int)textSize.X, 8);
         var filled = bar with { Width = (int)(bar.Width * Progress) };
 
-        SpriteBatch.Begin();
+        SpriteBatch.Begin(transformMatrix: UiTransform);
         SpriteBatch.DrawString(font, message, textPosition, Theme.TextColor * Transition.Alpha);
         SpriteBatch.Draw(Stack.BlankTexture, bar, Theme.DisabledColor * (0.5f * Transition.Alpha));
         SpriteBatch.Draw(Stack.BlankTexture, filled, Theme.TextColor * Transition.Alpha);

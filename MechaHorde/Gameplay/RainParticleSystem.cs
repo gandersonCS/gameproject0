@@ -32,7 +32,8 @@ namespace MechaHorde.Gameplay
             // Use a negative X value (e.g., -150) to make it blow to the left.
             Vector2 windVelocity = new Vector2(150, 1000); 
 
-            p.Initialize(where, windVelocity, Vector2.Zero, Color.DarkRed, scale: RandomHelper.NextFloat(0.1f, 0.4f), lifetime: 1);
+            // A soft, see-through pinkish grey: it catches the red light without hiding the scene
+            p.Initialize(where, windVelocity, Vector2.Zero, new Color(200, 140, 165) * 0.55f, scale: RandomHelper.NextFloat(0.1f, 0.4f), lifetime: 1);
         }
 
         public override void Update(GameTime gameTime)

@@ -15,8 +15,10 @@ namespace MechaHorde.UI;
 public class LobbyLayer : Layer
 {
     private const string Title = "Local Multiplayer";
-    private const float PanelHeight = 150;
-    private const float PanelGap = 12;
+    // Sizes are in UI units (the screen is 1080 tall at any resolution)
+    private const float PanelHeight = 300;
+    private const float PanelWidth = 380;
+    private const float PanelGap = 28;
     private const float SmallText = 0.75f;
 
     private readonly LocalLobby _lobby;
@@ -42,11 +44,11 @@ public class LobbyLayer : Layer
 
     public override void Draw(GameTime gameTime)
     {
-        var viewport = Game.GraphicsDevice.Viewport;
+        var screen = UiSize;
         float alpha = Transition.Alpha;
-        float centerX = viewport.Width / 2f;
+        float centerX = screen.X / 2f;
 
-        SpriteBatch.Begin();
+        SpriteBatch.Begin(transformMatrix: UiTransform);
 
         // The title slides down into place, as in the menus
         var titleFont = Theme.TitleFont;
@@ -55,7 +57,7 @@ public class LobbyLayer : Layer
 
         // A panel for each seat, in a row
         int count = _lobby.MaxPlayers;
-        float panelWidth = Math.Min(200, (viewport.Width - 32 - PanelGap * (count - 1)) / count);
+        float panelWidth = Math.Min(PanelWidth, (screen.X - 64 - PanelGap * (count - 1)) / count);
         float left = centerX - (panelWidth * count + PanelGap * (count - 1)) / 2;
         float top = Theme.MenuTop - 20;
         for (int i = 0; i < count; i++)
@@ -65,11 +67,11 @@ public class LobbyLayer : Layer
         }
 
         // How to join, and whether the game is about to start
-        float y = top + PanelHeight + 24;
+        float y = top + PanelHeight + 40;
         if (!_lobby.IsFull)
             y = DrawCentered(JoinHint(), centerX, y, Theme.TextColor * alpha, 1f);
-        DrawCentered(Status(), centerX, y + 8, Theme.SelectedColor * alpha, 1f);
-        DrawCentered($"{_backHint} to go back", centerX, viewport.Height - 40, Theme.DisabledColor * alpha, SmallText);
+        DrawCentered(Status(), centerX, y + 16, Theme.SelectedColor * alpha, 1f);
+        DrawCentered($"{_backHint} to go back", centerX, screen.Y - 90, Theme.DisabledColor * alpha, SmallText);
 
         SpriteBatch.End();
     }
@@ -82,7 +84,7 @@ public class LobbyLayer : Layer
             SpriteBatch.Draw(Stack.BlankTexture, panel, Theme.PanelColor * (alpha * 0.8f));
 
         float x = panel.Center.X;
-        float y = panel.Top + 12;
+        float y = panel.Top + 24;
         var color = PlayerColors.ForSeat(index);
 
         if (index >= _lobby.Seats.Count)
@@ -91,11 +93,11 @@ public class LobbyLayer : Layer
             return;
         }
 
-        float maxWidth = panel.Width - 12;
+        float maxWidth = panel.Width - 32;
         var seat = _lobby.Seats[index];
         y = DrawCentered($"Player {index + 1}", x, y, color * alpha, 1f, maxWidth);
         y = DrawCentered(seat.Input.Name, x, y, Theme.TextColor * alpha, SmallText, maxWidth);
-        y += 12;
+        y += 24;
         if (seat.IsReady)
         {
             y = DrawCentered("Ready!", x, y, color * alpha, 1f, maxWidth);

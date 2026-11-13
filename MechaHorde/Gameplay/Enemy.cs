@@ -10,7 +10,7 @@ namespace MechaHorde.Gameplay
     /// player's X; flyers move freely through the air.
     /// </summary>
     /// <remarks>
-    /// All positions are in level pixels (the Battlefield draws the level 6x). For walkers
+    /// All positions are in level pixels (the Battlefield scales the level to fit the screen). For walkers
     /// <see cref="Position"/> is where their feet touch the ground; for flyers it is their centre.
     /// </remarks>
     public class Enemy

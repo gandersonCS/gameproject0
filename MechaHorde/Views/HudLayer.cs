@@ -68,11 +68,13 @@ public class HudLayer : Layer
     public override void Draw(GameTime gameTime)
     {
         var font = Theme.TextFont;
-        var viewport = Game.GraphicsDevice.Viewport;
+        var screen = UiSize;
         float alpha = Transition.Alpha;
-        const float margin = 16;
+        const float margin = 32;
+        const float smallText = 0.7f;
 
-        SpriteBatch.Begin();
+        // Drawn in UI units (1080 tall), so the HUD is the same size relative to the screen at any resolution
+        SpriteBatch.Begin(transformMatrix: UiTransform);
 
         // The timer and the player's position, in the top left (the original MechaHorde HUD)
         string timerText = $"Time: {_battlefield.GameTimer:F2}";
@@ -83,28 +85,30 @@ public class HudLayer : Layer
             : spawner.IsBetweenWaves
                 ? $"\nWave {spawner.Wave} cleared! Next wave in {spawner.TimeUntilNextWave:F0}"
                 : $"\nWave {spawner.Wave} - Enemies left: {spawner.EnemiesRemaining}";
-        SpriteBatch.DrawString(Theme.TitleFont, timerText + playerPosition + waveText, new Vector2(10, 10),
-            Color.Red * alpha, 0f, Vector2.Zero, 0.5f, SpriteEffects.None, 0f);
+        SpriteBatch.DrawString(Theme.TitleFont, timerText + playerPosition + waveText, new Vector2(margin, margin),
+            new Color(255, 96, 86) * alpha, 0f, Vector2.Zero, 0.45f, SpriteEffects.None, 0f);
 
         // How to pause, in the top right, built from each player's current bindings
-        var position = new Vector2(viewport.Width - margin, margin);
+        var position = new Vector2(screen.X - margin, margin);
         foreach (var player in _players)
         {
             string prefix = IsMultiplayer ? $"Player {player.Id.Value}: " : "";
             string text = $"{prefix}{player.Input.DescribeBindings(StandardControls.Pause)} to pause";
-            var size = font.MeasureString(text);
+            var size = font.MeasureString(text) * smallText;
             var color = IsMultiplayer ? PlayerColors.For(player.Id) : Theme.TextColor;
-            SpriteBatch.DrawString(font, text, position - new Vector2(size.X, 0), color * (0.6f * alpha));
-            position.Y += font.LineSpacing;
+            SpriteBatch.DrawString(font, text, position - new Vector2(size.X, 0), color * (0.6f * alpha),
+                0f, Vector2.Zero, smallText, SpriteEffects.None, 0f);
+            position.Y += font.LineSpacing * smallText;
         }
 
         // Join and leave messages, fading out, in the bottom left
-        position = new Vector2(margin, viewport.Height - margin - font.LineSpacing);
+        position = new Vector2(margin, screen.Y - margin - font.LineSpacing * smallText);
         foreach (var (text, shown) in Enumerable.Reverse(_messages))
         {
             float fade = 1f - (float)((_now - shown) / MessageDuration);
-            SpriteBatch.DrawString(font, text, position, Theme.TextColor * (fade * alpha));
-            position.Y -= font.LineSpacing;
+            SpriteBatch.DrawString(font, text, position, Theme.TextColor * (fade * alpha),
+                0f, Vector2.Zero, smallText, SpriteEffects.None, 0f);
+            position.Y -= font.LineSpacing * smallText;
         }
 
         SpriteBatch.End();

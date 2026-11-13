@@ -114,6 +114,18 @@ public abstract class Layer
     protected SpriteBatch SpriteBatch => Stack.SpriteBatch;
 
     /// <summary>
+    /// The size of the screen in UI units (see <see cref="LayerStack.ReferenceHeight"/>).
+    /// Lay the interface out in these units and draw it with <see cref="UiTransform"/>, so it
+    /// is the same size relative to the screen at any resolution.
+    /// </summary>
+    protected Vector2 UiSize => Stack.UiSize;
+
+    /// <summary>
+    /// The SpriteBatch transform for drawing in UI units
+    /// </summary>
+    protected Matrix UiTransform => Stack.UiTransform;
+
+    /// <summary>
     /// Called when the layer is added to the stack, once graphics are available. Load content here.
     /// </summary>
     protected internal virtual void Load() { }
@@ -168,17 +180,16 @@ public abstract class Layer
     {
         Stack.FillScreen(Color.Black * (Theme.DimOpacity * Transition.Alpha));
 
-        var viewport = Game.GraphicsDevice.Viewport;
         var font = Theme.TextFont;
         var textSize = font.MeasureString(text);
-        var textPosition = (new Vector2(viewport.Width, viewport.Height) - textSize) / 2;
+        var textPosition = (UiSize - textSize) / 2;
 
         var padding = Theme.PanelPadding;
         var panel = new Rectangle(
             (int)(textPosition.X - padding.X), (int)(textPosition.Y - padding.Y),
             (int)(textSize.X + padding.X * 2), (int)(textSize.Y + padding.Y * 2));
 
-        SpriteBatch.Begin();
+        SpriteBatch.Begin(transformMatrix: UiTransform);
         if (Theme.PanelTexture != null)
             SpriteBatch.Draw(Theme.PanelTexture, panel, Color.White * Transition.Alpha);
         else

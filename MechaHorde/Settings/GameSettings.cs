@@ -54,4 +54,9 @@ public sealed class GameSettings
     /// Whether gamepads vibrate
     /// </summary>
     public bool Vibration { get; set; } = true;
+
+    /// <summary>
+    /// Whether the game fills the screen (otherwise it is in a resizable window). F11 switches.
+    /// </summary>
+    public bool Fullscreen { get; set; } = true;
 }

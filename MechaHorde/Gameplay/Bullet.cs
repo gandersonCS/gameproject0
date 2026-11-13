@@ -43,10 +43,11 @@ namespace MechaHorde.Gameplay
             // Calculate the angle of the bullet based on its velocity to orient the plasma trail
             float angle = (float)Math.Atan2(Velocity.Y, Velocity.X);
             
-            // Stretch the 1x1 pixel into a long, thin laser trail (e.g., 20px long, 3px thick)
-            Vector2 scale = new Vector2(20f, 3f);
-            
-            spriteBatch.Draw(texture, Position, null, plasmaColor, angle, Vector2.Zero, scale, SpriteEffects.None, 0f);
+            // Stretch the 1x1 pixel into a long, thin laser trail (in level pixels: 9 long, 1 thick),
+            // trailing behind the bullet and centred on its path
+            Vector2 scale = new Vector2(9f, 1f);
+
+            spriteBatch.Draw(texture, Position, null, plasmaColor, angle, new Vector2(1f, 0.5f), scale, SpriteEffects.None, 0f);
         }
     }
 }

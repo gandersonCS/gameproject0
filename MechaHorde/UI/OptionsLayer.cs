@@ -27,6 +27,7 @@ public class OptionsLayer : MechaMenuLayer
         base.Load();
 
         var settings = Game.Services.GetService<UserSettings>().Game;
+        var display = Game.Services.GetService<Display>();
 
         Menu.Add(new ChoiceItem<Difficulty>("Difficulty", Enum.GetValues<Difficulty>(),
                 () => settings.Difficulty, value => settings.Difficulty = value))
@@ -38,6 +39,7 @@ public class OptionsLayer : MechaMenuLayer
             .Add(new RangeItem("Effects volume", 0, GameSettings.MaxVolume, 1,
                 () => settings.EffectsVolume, value => settings.EffectsVolume = value))
             .Add(new ToggleItem("Vibration", () => settings.Vibration, value => settings.Vibration = value))
+            .Add(new ToggleItem("Fullscreen (F11)", () => display.IsFullscreen, display.SetFullscreen))
             .Add(new ButtonItem("Controls", _ => Open(new ControlsLayer(DimBackground))))
             .Add(new ButtonItem("Back", OnCancel));
     }

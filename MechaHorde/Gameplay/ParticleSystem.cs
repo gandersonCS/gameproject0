@@ -77,6 +77,11 @@ public class ParticleSystem : DrawableGameComponent
     /// <summary>The BlendState to use with this particle system</summary>
     protected BlendState blendState = BlendState.AlphaBlend;
 
+    /// <summary>
+    /// The transform the particles are drawn with (e.g. to scale them to the screen)
+    /// </summary>
+    public Matrix Transform { get; set; } = Matrix.Identity;
+
     /// <summary>The filename of the texture to use for the particles</summary>
     protected string textureFilename;
 
@@ -231,7 +236,7 @@ public class ParticleSystem : DrawableGameComponent
     {
         // tell sprite batch to begin, using the spriteBlendMode specified in
         // initializeConstants
-        spriteBatch.Begin(blendState: blendState);
+        spriteBatch.Begin(blendState: blendState, transformMatrix: Transform);
 
         foreach (Particle p in particles)
         {

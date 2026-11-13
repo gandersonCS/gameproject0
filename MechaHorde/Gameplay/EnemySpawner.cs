@@ -192,10 +192,11 @@ public class EnemySpawner
         bool fromLeft = canLeft == canRight ? RandomHelper.Next(2) == 0 : canLeft;
 
         float x = fromLeft ? viewLeft - SpawnMargin : viewRight + SpawnMargin;
+        // Flyers appear at heights the camera shows (it shows about 70 level pixels above the ground)
         float y = type switch
         {
-            Enemy.Type.drone => RandomHelper.NextFloat(-30f, 60f),
-            Enemy.Type.ranged => RandomHelper.NextFloat(20f, 60f),
+            Enemy.Type.drone => RandomHelper.NextFloat(Enemy.GroundY - 65f, Enemy.GroundY - 25f),
+            Enemy.Type.ranged => RandomHelper.NextFloat(Enemy.GroundY - 65f, Enemy.GroundY - 40f),
             _ => Enemy.GroundY
         };
 

@@ -130,6 +130,35 @@ public sealed class LayerStack : DrawableGameComponent
     }
 
     /// <summary>
+    /// The screen height the user interface is laid out for. Layers lay themselves out in
+    /// "UI units", on a canvas this tall (and as wide as the screen's shape makes it), and are
+    /// scaled up or down to fit the real screen, so the interface is the same size relative to
+    /// the screen at any resolution.
+    /// </summary>
+    public const float ReferenceHeight = 1080f;
+
+    /// <summary>
+    /// How many screen pixels one UI unit covers (1 on a 1080p screen, 2 at 4K, ...)
+    /// </summary>
+    public float UiScale => Math.Max(0.25f, GraphicsDevice.Viewport.Height / ReferenceHeight);
+
+    /// <summary>
+    /// The size of the screen in UI units: always <see cref="ReferenceHeight"/> tall, and as
+    /// wide as the screen's aspect ratio makes it (about 1920 on a 16:9 screen)
+    /// </summary>
+    public Vector2 UiSize => new(GraphicsDevice.Viewport.Width / UiScale, GraphicsDevice.Viewport.Height / UiScale);
+
+    /// <summary>
+    /// The SpriteBatch transform that draws in UI units: pass it to SpriteBatch.Begin
+    /// </summary>
+    public Matrix UiTransform => Matrix.CreateScale(UiScale, UiScale, 1f);
+
+    /// <summary>
+    /// Converts a point on screen (e.g. the mouse) to UI units
+    /// </summary>
+    public Vector2 ScreenToUi(Point screen) => screen.ToVector2() / UiScale;
+
+    /// <summary>
     /// Fills the screen with a color (e.g. translucent black, to dim the layers beneath a popup)
     /// </summary>
     public void FillScreen(Color color)
