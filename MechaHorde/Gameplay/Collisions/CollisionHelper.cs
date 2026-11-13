@@ -30,7 +30,7 @@ namespace MechaHorde.Gameplay.Collisions
         /// <returns>true for colision, false otherwise</returns>
         public static bool Collides( BoundingRectangle a, BoundingRectangle b)
         {
-            return !(a.Right < b.Left || a.Left > b.Right || a.Top < b.Bottom || a.Bottom < b.Top);
+            return !(a.Right < b.Left || a.Left > b.Right || a.Top > b.Bottom || a.Bottom < b.Top);
             
         }
 

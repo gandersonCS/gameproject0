@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -6,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 namespace MechaHorde.Gameplay;
 
 /// <summary>
-/// The level being played: the player, their gun, the scrolling parallax level and the rain.
+/// The level being played: the player, their gun, the enemies, the scrolling parallax level and the rain.
 /// </summary>
 /// <remarks>
 /// This is the gameplay from the original GameProject0Game (everything that ran once
@@ -19,7 +20,17 @@ public class Battlefield
     /// <summary>
     /// The level and its sprites are drawn this many times their size
     /// </summary>
-    private const float Scale = 6.0f;
+    public const float Scale = 6.0f;
+
+    /// <summary>
+    /// How quickly the camera catches up with the player (higher is tighter)
+    /// </summary>
+    private const float CameraFollowSharpness = 7f;
+
+    /// <summary>
+    /// How far ahead of the player the camera looks when they run at full speed (level pixels)
+    /// </summary>
+    private const float CameraLookAhead = 18f;
 
     /// <summary>
     /// The player can't go past this X coordinate (in level pixels)
@@ -30,6 +41,7 @@ public class Battlefield
     private readonly LevelCamera _camera = new();
     private readonly Player _player = new();
     private Gun _playerGun;
+    private readonly EnemySpawner _spawner = new(0f, LevelWidth);
     private RainParticleSystem _rain;
 
     private Texture2D _pixel;
@@ -38,6 +50,7 @@ public class Battlefield
     private Texture2D _background;
 
     private float gameTimer = 0f;
+    private bool _cameraPlaced;
 
     public Battlefield(Game game)
     {
@@ -48,6 +61,11 @@ public class Battlefield
     /// The player
     /// </summary>
     public Player Player => _player;
+
+    /// <summary>
+    /// Sends in the enemies, in waves
+    /// </summary>
+    public EnemySpawner Spawner => _spawner;
 
     /// <summary>
     /// The time shown on the HUD
@@ -61,6 +79,7 @@ public class Battlefield
     public void LoadContent(ContentManager content)
     {
         _player.LoadContent(content);
+        _spawner.LoadContent(content);
         _foreground = content.Load<Texture2D>("Textures/Level/foreground");
         _midground = content.Load<Texture2D>("Textures/Level/midground");
         _background = content.Load<Texture2D>("Textures/Level/background");
@@ -92,31 +111,10 @@ public class Battlefield
     /// <param name="viewport">The screen the level is drawn on</param>
     public void Update(GameTime gameTime, Viewport viewport)
     {
-        _player.Update(gameTime);
+        float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-        // 1. Trap the player at exactly 1000
-        _player.position.X = MathHelper.Clamp(_player.position.X, 16f, LevelWidth);
-
-        float screenCenterW = viewport.Width / 2f;
-
-        // 2. The dynamic deadzone
-        float deadzone = (screenCenterW / Scale) - 20f;
-
-        if (_player.position.X > _camera.Position.X + deadzone)
-            _camera.Position = new Vector2(_player.position.X - deadzone, 100f);
-        else if (_player.position.X < _camera.Position.X - deadzone)
-            _camera.Position = new Vector2(_player.position.X + deadzone, 100f);
-
-        // 3. Stop the camera from scrolling past the 1000 pixel mark
-        float minCameraX = screenCenterW / Scale;
-        float maxCameraX = LevelWidth - minCameraX;
-
-        _camera.Position = new Vector2(
-            MathHelper.Clamp(_camera.Position.X, minCameraX, maxCameraX),
-            100f
-        );
-
-        // Convert screen mouse coordinates into accurate world coordinates
+        // Convert screen mouse coordinates into world coordinates (using last frame's camera,
+        // which is what's on screen right now)
         var (offsetX, offsetY, _) = Offsets(viewport);
         MouseState mouse = Mouse.GetState();
         Vector2 worldMousePosition = new Vector2(
@@ -124,8 +122,36 @@ public class Battlefield
             (mouse.Y - offsetY) / Scale
         );
 
-        // Update the gun with the correct targeted mouse position
-        _playerGun.Update(gameTime, _player.position, worldMousePosition);
+        // 1. Move the player, aiming at the mouse, and keep them inside the level
+        _player.Update(gameTime, worldMousePosition);
+        _player.ClampX(16f, LevelWidth);
+
+        // 2. Fire from Sara's gun, towards the mouse
+        if (_playerGun.Update(gameTime, _player.MuzzlePosition, _player.AimDirection))
+            _player.NotifyShot();
+
+        // 3. The camera eases towards the player, looking ahead in the direction they run,
+        // and never scrolls past the level's edges
+        float screenCenterW = viewport.Width / 2f;
+        float minCameraX = screenCenterW / Scale;
+        float maxCameraX = LevelWidth - minCameraX;
+
+        float targetX = _player.position.X + _player.Velocity.X / 120f * CameraLookAhead;
+        float cameraX = _cameraPlaced
+            ? MathHelper.Lerp(_camera.Position.X, targetX, 1f - MathF.Exp(-CameraFollowSharpness * dt))
+            : targetX;
+        _cameraPlaced = true;
+
+        _camera.Position = new Vector2(MathHelper.Clamp(cameraX, minCameraX, maxCameraX), 100f);
+
+        // The enemies: spawned just off the screen's edges, then they come for the player
+        float halfViewWidth = viewport.Width / 2f / Scale;
+        _spawner.Update(gameTime, _player,
+            _camera.Position.X - halfViewWidth, _camera.Position.X + halfViewWidth,
+            _playerGun.ActiveBullets);
+
+        // When the player has health, damage it here, e.g.:
+        // foreach (var enemy in _spawner.EnemiesTouching(_player.Bounds)) { ... }
 
         _rain.Update(gameTime);
     }
@@ -140,22 +166,22 @@ public class Battlefield
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch, Viewport viewport, Vector2 shake)
     {
         var (offsetX, offsetY, floorScreenPosition) = Offsets(viewport);
-        offsetX += shake.X;
-        offsetY += shake.Y;
+        offsetX = MathF.Round(offsetX + shake.X);
+        offsetY = MathF.Round(offsetY + shake.Y);
 
         // BATCH 1: Background
-        Matrix bgTransform = Matrix.CreateScale(Scale, Scale, 1) * Matrix.CreateTranslation(offsetX * 0.33f, shake.Y, 0);
+        Matrix bgTransform = Matrix.CreateScale(Scale, Scale, 1) * Matrix.CreateTranslation(MathF.Round(offsetX * 0.33f), MathF.Round(shake.Y), 0);
         spriteBatch.Begin(samplerState: SamplerState.PointWrap, transformMatrix: bgTransform);
         spriteBatch.Draw(_background, Vector2.Zero, new Rectangle(0, 0, 1000, _background.Height), Color.DarkOrange);
         spriteBatch.End();
 
         // BATCH 2: Midground
-        Matrix mgTransform = Matrix.CreateScale(Scale, Scale, 1) * Matrix.CreateTranslation(offsetX * 0.66f, offsetY, 0);
+        Matrix mgTransform = Matrix.CreateScale(Scale, Scale, 1) * Matrix.CreateTranslation(MathF.Round(offsetX * 0.66f), offsetY, 0);
         spriteBatch.Begin(samplerState: SamplerState.PointWrap, transformMatrix: mgTransform);
         spriteBatch.Draw(_midground, Vector2.Zero, new Rectangle(0, 0, 1000, _midground.Height), Color.DarkRed);
         spriteBatch.End();
 
-        // BATCH 3: Foreground, Player, and Bullets
+        // BATCH 3: Foreground, Enemies, Player, and Bullets
         Matrix fgTransform = Matrix.CreateScale(Scale, Scale, 1) * Matrix.CreateTranslation(offsetX, offsetY, 0);
         spriteBatch.Begin(
             sortMode: SpriteSortMode.Deferred,
@@ -167,7 +193,8 @@ public class Battlefield
             transformMatrix: fgTransform
         );
         spriteBatch.Draw(_foreground, Vector2.Zero, new Rectangle(0, 0, 1000, _foreground.Height), Color.Red);
-        _player.Draw(gameTime, spriteBatch);
+        _spawner.Draw(gameTime, spriteBatch);
+        _player.Draw(gameTime, spriteBatch, Scale);
         _playerGun.Draw(spriteBatch);
         spriteBatch.End();
 
@@ -186,7 +213,8 @@ public class Battlefield
     /// </summary>
     private (float OffsetX, float OffsetY, float Floor) Offsets(Viewport viewport)
     {
-        float offsetX = viewport.Width / 2f - (_camera.Position.X * Scale);
+        // Rounded to whole screen pixels, so the pixel art doesn't shimmer as the camera moves
+        float offsetX = MathF.Round(viewport.Width / 2f - (_camera.Position.X * Scale));
         float floorScreenPosition = viewport.Height - 50f;
         float offsetY = floorScreenPosition - (100f * Scale);
         return (offsetX, offsetY, floorScreenPosition);

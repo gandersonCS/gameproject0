@@ -5,6 +5,9 @@ Content assets live in `MechaHorde.Content/Assets/`.
 
 ## Textures
 
+- `Textures/Sprites/Sara/SaraMain.png`, `Textures/Sprites/Sara/SaraShooting.png` - "Space Sara"
+  (no helmet) main and shooting frames, created by Emcee Flesher (+ansimuz) of OpenGameArt,
+  released under OGA-BY 3.0+ (as credited on the sheets). TODO: add the OpenGameArt page link
 - `Textures/Sprites/M484SpaceSoldier.png` - created by Master484 of OpenGameArt
   [https://opengameart.org/content/space-soldier-m484-games](https://opengameart.org/content/space-soldier-m484-games),
   released under the public domain
@@ -18,6 +21,12 @@ Content assets live in `MechaHorde.Content/Assets/`.
   Warped City, created by ansimuz of OpenGameArt
   [https://opengameart.org/content/warped-city](https://opengameart.org/content/warped-city),
   released under the public domain
+- `Textures/Sprites/OpenGunnerMechs.png`, `Textures/Sprites/Enemies/GreenMech.png` (the green mech
+  frames cut from it) - Open Gunner Mechs, created by Master484 of OpenGameArt, released under CC-BY 3.0
+- `Textures/Sprites/Enemies/RobotGunner.png` - the robot gunner frames (robotgunner.zip) packed into
+  one sheet. TODO: author, link and license
+- `Textures/Sprites/Enemies/SecuriBot.png` - the Securi-Bot frames (securityrobot.png) packed into
+  one sheet. TODO: author, link and license
 - `Textures/Effects/drop.png` - rain drop particle
 - `Textures/gradient.png` - procedurally generated for the CIS580 game architecture, released under
   the public domain

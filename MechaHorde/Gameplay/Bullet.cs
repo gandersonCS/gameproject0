@@ -37,6 +37,9 @@ namespace MechaHorde.Gameplay
 
         public void Draw(SpriteBatch spriteBatch)
         {
+            // A bullet that hit something this frame is removed by the gun next frame
+            if (!IsActive) return;
+
             // Calculate the angle of the bullet based on its velocity to orient the plasma trail
             float angle = (float)Math.Atan2(Velocity.Y, Velocity.X);
             

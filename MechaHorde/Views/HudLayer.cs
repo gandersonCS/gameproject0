@@ -77,7 +77,13 @@ public class HudLayer : Layer
         // The timer and the player's position, in the top left (the original MechaHorde HUD)
         string timerText = $"Time: {_battlefield.GameTimer:F2}";
         string playerPosition = $"\nPlayer X: {_battlefield.Player.position.X}\nPlayer Y: {_battlefield.Player.position.Y}";
-        SpriteBatch.DrawString(Theme.TitleFont, timerText + playerPosition, new Vector2(10, 10),
+        var spawner = _battlefield.Spawner;
+        string waveText = spawner.Wave == 0
+            ? $"\nFirst wave in {spawner.TimeUntilNextWave:F0}"
+            : spawner.IsBetweenWaves
+                ? $"\nWave {spawner.Wave} cleared! Next wave in {spawner.TimeUntilNextWave:F0}"
+                : $"\nWave {spawner.Wave} - Enemies left: {spawner.EnemiesRemaining}";
+        SpriteBatch.DrawString(Theme.TitleFont, timerText + playerPosition + waveText, new Vector2(10, 10),
             Color.Red * alpha, 0f, Vector2.Zero, 0.5f, SpriteEffects.None, 0f);
 
         // How to pause, in the top right, built from each player's current bindings

@@ -21,8 +21,16 @@ namespace MechaHorde.Gameplay
             bulletTexture = baseBulletTexture;
         }
 
-public void Update(GameTime gameTime, Vector2 playerPosition, Vector2 targetPosition)
+/// <summary>
+/// Updates the gun and its bullets
+/// </summary>
+/// <param name="gameTime">The game time</param>
+/// <param name="muzzlePosition">Where bullets come out of the gun</param>
+/// <param name="direction">The unit direction to fire in</param>
+/// <returns>True if the gun fired this frame</returns>
+public bool Update(GameTime gameTime, Vector2 muzzlePosition, Vector2 direction)
 {
+    bool fired = false;
     float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
     if (cooldownTimer > 0) cooldownTimer -= dt;
 
@@ -31,8 +39,9 @@ public void Update(GameTime gameTime, Vector2 playerPosition, Vector2 targetPosi
     // Check for left click and fire rate cooldown
     if (currentMouseState.LeftButton == ButtonState.Pressed && priorMouseState.LeftButton == ButtonState.Released && cooldownTimer <= 0)
     {
-        Shoot(playerPosition, targetPosition);
+        Shoot(muzzlePosition, direction);
         cooldownTimer = fireRate;
+        fired = true;
     }
 
     priorMouseState = currentMouseState;
@@ -46,29 +55,14 @@ public void Update(GameTime gameTime, Vector2 playerPosition, Vector2 targetPosi
             ActiveBullets.RemoveAt(i);
         }
     }
+
+    return fired;
 }
 
-private void Shoot(Vector2 startPos, Vector2 targetPos)
+private void Shoot(Vector2 muzzlePosition, Vector2 direction)
 {
-    // Adjust spawn so the bullet comes out of the gun/chest, not the player's feet
-    Vector2 gunBarrelOffset = new Vector2(0, -15); 
-    Vector2 actualStartPos = startPos + gunBarrelOffset;
-
-    // Calculate the direction from the gun to the mouse
-    Vector2 direction = targetPos - actualStartPos;
-    
-    // Normalize ensures the bullet always travels at the exact bulletSpeed regardless of how far away the mouse is
-    if (direction != Vector2.Zero)
-    {
-        direction.Normalize();
-    }
-    else
-    {
-        direction = new Vector2(1, 0); // Fallback to shooting right
-    }
-    
-    Bullet newBullet = new Bullet(bulletTexture, actualStartPos, direction * bulletSpeed);
-    ActiveBullets.Add(newBullet);
+    if (direction == Vector2.Zero) direction = new Vector2(1, 0); // Fallback to shooting right
+    ActiveBullets.Add(new Bullet(bulletTexture, muzzlePosition, Vector2.Normalize(direction) * bulletSpeed));
 }
 
         public void Draw(SpriteBatch spriteBatch)
