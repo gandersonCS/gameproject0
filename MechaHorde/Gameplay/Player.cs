@@ -145,8 +145,19 @@ public class Player
     private float _animationTime;
     private float _runDistance;
     private float _landTimer;
+    private int _stepCount;
 
     public PlayerState State { get; private set; } = PlayerState.Idle;
+
+    /// <summary>
+    /// Raised when one of Sara's feet comes down while she runs (for footstep sounds)
+    /// </summary>
+    public event Action Footstep;
+
+    /// <summary>
+    /// Raised when Sara lands after a jump or a fall
+    /// </summary>
+    public event Action Landed;
 
     public Vector2 Velocity => _velocity;
 
@@ -310,6 +321,7 @@ public class Player
             {
                 _grounded = true;
                 _jumpHeld = false;
+                if (_airTime > 0.1f) Landed?.Invoke();
                 // Only show the landing animation after a real fall
                 if (_airTime > 0.25f) _landTimer = 4 / 16.5f;
             }
@@ -337,6 +349,12 @@ public class Player
 
         // Any movement cancels the landing animation
         if (State != PlayerState.Land) _landTimer = 0;
+
+        // The run cycle is 10 frames, one per stride, with a foot coming down every 5
+        int steps = (int)(_runDistance / (StrideLength * 5f));
+        if (steps != _stepCount && State == PlayerState.Run)
+            Footstep?.Invoke();
+        _stepCount = steps;
 
         if (State != previous && !(previous == PlayerState.Jump && State == PlayerState.Fall))
             _animationTime = 0;

@@ -28,8 +28,24 @@ Content assets live in `MechaHorde.Content/Assets/`.
 - `Textures/Sprites/Enemies/SecuriBot.png` - the Securi-Bot frames (securityrobot.png) packed into
   one sheet. TODO: author, link and license
 - `Textures/Effects/drop.png` - rain drop particle
+- `Textures/Pickups/spark_block.png` - the spark's texture: the "punch" block's ambient occlusion
+  (`punch_a.png`) on dark metal, with its glow (`punch_emit.png`) added on top, from the Block Pack
+  (see Models below), released under CC0 (public domain)
 - `Textures/gradient.png` - procedurally generated for the CIS580 game architecture, released under
   the public domain
+
+## Models
+
+- `Models/scrap_gear.obj`, `Models/scrap_propeller.obj` - "BrokenGear" and "BrokenPropellor", made in
+  Art of Illusion 2.8.1 (2011). Centred, scaled so their largest side is 2 units, and triangulated
+  (with flat normals added to the gear) for the game. TODO: author, link and license
+- `Models/spark_hip.obj`, `spark_kick.obj`, `spark_bomb.obj`, `spark_nuke.obj`, `spark_orb.obj` -
+  `block-hip.fbx`, `block-kick.fbx`, `bomb.fbx`, `nuke.fbx` and `orb.fbx` from the Block Pack, converted
+  the same way as `spark_block.obj` below, with matching textures in `Textures/Pickups/` (each made
+  from the model's base and glow textures). CC0 (public domain)
+- `Models/spark_block.obj` - `block-punch.fbx` from the Block Pack (block pack + shaders),
+  released under CC0 (public domain). Converted to OBJ, centred, and scaled so its largest side is
+  2 units. TODO: add the pack's page link
 
 ## Fonts
 
@@ -67,6 +83,36 @@ Content assets live in `MechaHorde.Content/Assets/`.
   released under Creative Commons
 - `Audio/Sfx/player_join.wav`, `Audio/Sfx/player_leave.wav` - procedurally generated for the CIS580
   game architecture, released under the public domain
+
+Gameplay sound effects (converted to 44.1 kHz 16-bit WAV and peak-normalized; the footsteps and
+heavy clangs were trimmed and faded from the cast iron recordings):
+
+- `Audio/Sfx/Weapons/rifle_shot_1.wav`, `Audio/Sfx/Weapons/rifle_shot_2.wav` - "Futuristic Weapons /
+  Assault Rifle", created by Michael Klier of OpenGameArt
+  [https://opengameart.org/node/47021](https://opengameart.org/node/47021),
+  released under CC-BY-SA 3.0
+- `Audio/Sfx/Weapons/laser_rifle.wav` - "Laser rifle" (made for Red Eclipse), created by Skorpio of
+  OpenGameArt [https://opengameart.org/content/laser-rifle](https://opengameart.org/content/laser-rifle),
+  released under CC-BY-SA 3.0
+- `Audio/Sfx/Weapons/burst_fire.wav` - "Laser weapon burst fire", created by celestialghost8 of
+  OpenGameArt [https://opengameart.org/content/laser-weapon-burst-fire](https://opengameart.org/content/laser-weapon-burst-fire),
+  released under CC0 (public domain)
+- `Audio/Sfx/Robots/mechanical_explosion.wav` - "Mechanical Explosion", created by Spring Spring of
+  OpenGameArt [https://opengameart.org/content/mechanical-explosion](https://opengameart.org/content/mechanical-explosion),
+  released under CC0 (public domain)
+- `Audio/Sfx/Impacts/clink_*.wav`, `Audio/Sfx/Impacts/thud_*.wav`, `Audio/Sfx/Player/pickup.wav`,
+  `Audio/Sfx/Waves/wave_gong.wav` - "Metal Impact Sounds", created by Brian MacIntosh (BMacZero) of
+  OpenGameArt [https://opengameart.org/content/metal-impact-sounds](https://opengameart.org/content/metal-impact-sounds),
+  released under CC0 (public domain)
+- `Audio/Sfx/Player/step_*.wav`, `Audio/Sfx/Impacts/clang_heavy_*.wav` - "33 metal clang sounds from
+  cast iron pans", created by bart of OpenGameArt
+  [https://opengameart.org/node/5249](https://opengameart.org/node/5249),
+  released under CC0 (public domain)
+- `Audio/Sfx/Player/hurt.wav`, `Audio/Sfx/Player/shield.wav`, `Audio/Sfx/Robots/ground_pound.wav`,
+  `Audio/Sfx/Waves/warcry.wav` - "Osare.10 Sound Pack" (made for Osare.10 for Mr.Pfunked), submitted
+  by HaelDB to OpenGameArt [https://opengameart.org/content/osare-10-sound-pack](https://opengameart.org/content/osare-10-sound-pack),
+  released under CC-BY 3.0 (the page no longer shows its author or license; archived copies list
+  CC-BY 3.0)
 
 ## Code
 

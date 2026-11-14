@@ -100,6 +100,7 @@ public class Battlefield
     private Gun _playerGun;
     private readonly EnemySpawner _spawner = new(0f, LevelWidth);
     private RainParticleSystem _rain;
+    private PickupSystem _pickups;
 
     private Texture2D _pixel;
     private Texture2D _haze;
@@ -109,6 +110,7 @@ public class Battlefield
 
     private float gameTimer = 0f;
     private bool _cameraPlaced;
+    private float _halfViewWidth = 160f;
 
     public Battlefield(Game game)
     {
@@ -129,6 +131,36 @@ public class Battlefield
     /// The time shown on the HUD
     /// </summary>
     public float GameTimer => gameTimer;
+
+    /// <summary>
+    /// Raised when the player's gun fires
+    /// </summary>
+    public event Action PlayerShot;
+
+    /// <summary>
+    /// How a sound coming from <paramref name="x"/> (in level pixels) should be heard: panned
+    /// toward its side of the screen, and quieter the further off the screen it is.
+    /// </summary>
+    /// <returns>The volume (0 to 1) and pan (-1 left to 1 right) to play it with</returns>
+    public (float Volume, float Pan) Hear(float x)
+    {
+        // -1 at the left edge of the screen, 1 at the right, beyond that off the screen
+        float side = (x - _camera.Position.X) / _halfViewWidth;
+        float pan = 0.6f * Math.Clamp(side, -1f, 1f);    // Gently: hard left or right sounds odd on headphones
+        float offScreen = Math.Max(0f, Math.Abs(side) - 1f);
+        float volume = Math.Clamp(1f - offScreen * 1.5f, 0.25f, 1f);
+        return (volume, pan);
+    }
+
+    /// <summary>
+    /// The player's Scraplight (scrap and sparks), collected from destroyed robots
+    /// </summary>
+    public Scraplight Scraplight { get; } = new();
+
+    /// <summary>
+    /// The Scraplight pickups lying in the level
+    /// </summary>
+    public PickupSystem Pickups => _pickups;
 
     /// <summary>
     /// How many screen pixels one level pixel covers on a screen this tall: a whole number,
@@ -154,6 +186,13 @@ public class Battlefield
         _haze = CreateHaze(_game.GraphicsDevice);
         _playerGun = new Gun(_pixel);
 
+        // Scraplight: robots shed scrap as they're shot, and burst into scrap (and sometimes a
+        // spark) when destroyed
+        _pickups = new PickupSystem(_game.GraphicsDevice, Scraplight);
+        _pickups.LoadContent(content);
+        _spawner.EnemyDamaged += _pickups.OnEnemyDamaged;
+        _spawner.EnemyDestroyed += _pickups.OnEnemyDestroyed;
+
         // The rain falls across the whole screen, in UI units (a screen 1080 tall), so it looks
         // the same at any resolution. It starts left of the screen to allow for the wind, and
         // is wide enough for any screen shape. (It is updated and drawn with the level, so it
@@ -170,6 +209,7 @@ public class Battlefield
         _pixel?.Dispose();
         _haze?.Dispose();
         _rain?.Dispose();
+        _pickups?.Unload();
     }
 
     /// <summary>
@@ -193,11 +233,15 @@ public class Battlefield
 
         // 2. Fire from Sara's gun, towards the mouse
         if (_playerGun.Update(gameTime, _player.MuzzlePosition, _player.AimDirection))
+        {
             _player.NotifyShot();
+            PlayerShot?.Invoke();
+        }
 
         // 3. The camera eases towards the player, looking ahead in the direction they run,
         // and never scrolls past the level's edges
         float halfViewWidth = viewport.Width / 2f / view.Scale;
+        _halfViewWidth = halfViewWidth;
         float minCameraX = halfViewWidth;
         float maxCameraX = Math.Max(minCameraX, LevelWidth - halfViewWidth);
 
@@ -213,6 +257,9 @@ public class Battlefield
         _spawner.Update(gameTime, _player,
             _camera.Position.X - halfViewWidth, _camera.Position.X + halfViewWidth,
             _playerGun.ActiveBullets);
+
+        // The Scraplight the robots dropped: it falls, and the player collects it by touching it
+        _pickups.Update(gameTime, _player);
 
         // When the player has health, damage it here, e.g.:
         // foreach (var enemy in _spawner.EnemiesTouching(_player.Bounds)) { ... }
@@ -254,7 +301,7 @@ public class Battlefield
         DrawFloor(spriteBatch, view, viewport);
         spriteBatch.End();
 
-        // BATCH 2: Enemies, the player, and bullets, in level pixels
+        // BATCH 2: Shadows and enemies, in level pixels
         Matrix levelTransform = Matrix.CreateScale(view.Scale, view.Scale, 1) * Matrix.CreateTranslation(view.OffsetX, view.OffsetY, 0);
         spriteBatch.Begin(
             sortMode: SpriteSortMode.Deferred,
@@ -267,6 +314,26 @@ public class Battlefield
         );
         DrawShadows(spriteBatch);
         _spawner.Draw(gameTime, spriteBatch);
+        spriteBatch.End();
+
+        // The Scraplight pickups: the sparks' glow (additive, so it lights up what's behind it),
+        // then the 3D models themselves, in front of the robots and behind the player
+        spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, SamplerState.LinearClamp,
+            null, null, null, levelTransform);
+        _pickups.DrawGlow(spriteBatch);
+        spriteBatch.End();
+        _pickups.DrawModels(view.Scale, new Vector2(view.OffsetX, view.OffsetY));
+
+        // BATCH 3: The player and bullets, over everything else in the level
+        spriteBatch.Begin(
+            sortMode: SpriteSortMode.Deferred,
+            blendState: BlendState.AlphaBlend,
+            samplerState: SamplerState.PointClamp,
+            depthStencilState: null,
+            rasterizerState: null,
+            effect: null,
+            transformMatrix: levelTransform
+        );
         _player.Draw(gameTime, spriteBatch, view.Scale);
         _playerGun.Draw(spriteBatch);
         spriteBatch.End();

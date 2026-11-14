@@ -125,6 +125,7 @@ public sealed class InGameState : AppState, ILoadable
         var feedback = new GameFeedback(_players, _levelView, _rumble, _hitStop);
         GameEventRaised += feedback.OnGameEvent;
         GameEventRaised += gameEvent => _audio.OnGameEvent(gameEvent, Session.World);
+        _audio.Listen(Battlefield);
         _audio.PlayGameMusic();
     }
 

@@ -86,6 +86,27 @@ public class EnemySpawner
     /// </summary>
     public event Action<Enemy> EnemyDestroyed;
 
+    /// <summary>
+    /// Raised when one of the player's bullets hits an enemy (after the damage is done, so
+    /// <see cref="Enemy.IsAlive"/> is false if the hit destroyed it)
+    /// </summary>
+    public event Action<Enemy> EnemyDamaged;
+
+    /// <summary>
+    /// Raised when an enemy is sent in (just off the screen)
+    /// </summary>
+    public event Action<Enemy> EnemySpawned;
+
+    /// <summary>
+    /// Raised when a walking enemy's foot comes down
+    /// </summary>
+    public event Action<Enemy> EnemyStepped;
+
+    /// <summary>
+    /// Raised when a wave starts, with its number (1 for the first)
+    /// </summary>
+    public event Action<int> WaveStarted;
+
     private float SpawnInterval => Math.Max(0.35f, 1.5f - 0.1f * (Wave - 1));
     private int MaxAlive => Math.Min(20, 5 + Wave);
 
@@ -123,7 +144,11 @@ public class EnemySpawner
         }
 
         foreach (var enemy in _enemies)
+        {
             enemy.Update(gameTime, player);
+            if (enemy.SteppedThisFrame)
+                EnemyStepped?.Invoke(enemy);
+        }
 
         CheckBullets(bullets, dt);
 
@@ -165,6 +190,7 @@ public class EnemySpawner
         Wave = wave;
         _leftToSpawn = 4 + 3 * (wave - 1);
         _spawnTimer = 0;
+        WaveStarted?.Invoke(wave);
     }
 
     /// <summary>
@@ -200,7 +226,9 @@ public class EnemySpawner
             _ => Enemy.GroundY
         };
 
-        _enemies.Add(new Enemy(type, new Vector2(x, y), _sprites));
+        var enemy = new Enemy(type, new Vector2(x, y), _sprites);
+        _enemies.Add(enemy);
+        EnemySpawned?.Invoke(enemy);
     }
 
     /// <summary>
@@ -222,6 +250,7 @@ public class EnemySpawner
                 {
                     enemy.Hit(1);
                     bullet.IsActive = false;
+                    EnemyDamaged?.Invoke(enemy);
                     break;
                 }
             }

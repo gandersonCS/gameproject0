@@ -45,6 +45,11 @@ namespace MechaHorde.Gameplay
         public bool IsAlive => Health > 0;
         public bool IsFlying => EnemyType == Type.drone || EnemyType == Type.ranged;
 
+        /// <summary>
+        /// True on a frame when a walker's foot came down (for footstep sounds)
+        /// </summary>
+        public bool SteppedThisFrame { get; private set; }
+
         private readonly EnemySprites _sprites;
         private readonly float _speed;
         private readonly float _stopDistance;
@@ -55,6 +60,7 @@ namespace MechaHorde.Gameplay
         private int _animationFrame;
         private float _hitFlash;
         private float _age;
+        private int _stompCount;
 
         public Enemy(Type type, Vector2 startPosition, EnemySprites sprites)
         {
@@ -103,6 +109,7 @@ namespace MechaHorde.Gameplay
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
             _age += dt;
             if (_hitFlash > 0) _hitFlash -= dt;
+            SteppedThisFrame = false;
 
             // player.position is at the player's feet, so aim at the middle of their body
             Vector2 playerCenter = player.Center;
@@ -134,6 +141,15 @@ namespace MechaHorde.Gameplay
             }
 
             Animate(dt);
+
+            // The heavy mech's stomp (see Draw) touches down each time sin(age * 6) crosses zero
+            if (EnemyType == Type.heavy)
+            {
+                int stomps = (int)(_age * 6f / MathF.PI);
+                if (stomps != _stompCount && _moving)
+                    SteppedThisFrame = true;
+                _stompCount = stomps;
+            }
         }
 
         private void MoveTowards(Vector2 target, float dt)
@@ -175,6 +191,8 @@ namespace MechaHorde.Gameplay
             {
                 _animationTimer -= frameTime;
                 _animationFrame = (_animationFrame + 1) % frameCount;
+                if (!IsFlying)
+                    SteppedThisFrame = true;    // Each stomping frame is a step
             }
         }
 

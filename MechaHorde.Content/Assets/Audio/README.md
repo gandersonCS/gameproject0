@@ -10,7 +10,23 @@
 | `Sfx/Click_Heavy_00.wav` | Menu button chosen |
 | `Sfx/Click_Standard_02.wav` | Menu cancelled / back |
 | `Sfx/player_join.wav`, `Sfx/player_leave.wav` | A player joined or left the game |
-| `Sfx/cg1.wav`, `Sfx/Shots/*`, `Sfx/Launches/*` | Weapon sounds, for the gameplay |
+| `Sfx/cg1.wav`, `Sfx/Shots/*`, `Sfx/Launches/*` | Older weapon sounds (not played) |
+| `Sfx/Weapons/rifle_shot_1.wav` | Sara's gun |
+| `Sfx/Weapons/rifle_shot_2.wav`, `laser_rifle.wav`, `burst_fire.wav` | A heavy shot and the robots' guns (ready for when they shoot) |
+| `Sfx/Impacts/clink_*.wav` | Bullets hitting drones and flying gunners |
+| `Sfx/Impacts/thud_*.wav` | Bullets hitting walking gunners; Sara landing |
+| `Sfx/Impacts/clang_heavy_*.wav` | Bullets glancing off the heavy mech |
+| `Sfx/Robots/mechanical_explosion.wav` | A robot destroyed (pitched lower for bigger robots) |
+| `Sfx/Robots/ground_pound.wav` | The heavy mech arriving, and crashing down when destroyed |
+| `Sfx/Player/step_*.wav` | Sara's footsteps, and (pitched down) the walking robots' |
+| `Sfx/Player/pickup.wav`, `Sfx/Player/shield.wav` | Collecting scrap, and a spark |
+| `Sfx/Player/hurt.wav` | Sara taking damage (ready for when she has health) |
+| `Sfx/Waves/wave_gong.wav` | A wave starting |
+| `Sfx/Waves/warcry.wav` | Every fifth wave |
+
+What plays each gameplay sound, and how loud, is set in `MechaHorde/Audio/GameAudio.cs`
+(`Listen`). Every gameplay sound is normalized to the same peak level, so the volumes there are
+the mix.
 
 Music is built as `SoundEffect` content (see `Builder.cs`), which lets the music player loop and
 cross-fade tracks. Content is loaded by its path relative to `Assets/`, without the extension,

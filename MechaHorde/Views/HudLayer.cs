@@ -15,7 +15,7 @@ namespace MechaHorde.Views;
 /// </summary>
 /// <remarks>
 /// The HUD is a popup (the world stays visible beneath it) that never takes input. It shows
-/// MechaHorde's timer and player position in the top left, how to pause (using the player's
+/// MechaHorde's timer, player position, wave and Scraplight counter in the top left, how to pause (using the player's
 /// current bindings), and, only when several people are playing, who is who and when players
 /// join or leave. (Single player games shouldn't show multiplayer details.)
 /// </remarks>
@@ -27,6 +27,8 @@ public class HudLayer : Layer
     private readonly Battlefield _battlefield;
     private readonly List<(string Text, TimeSpan Shown)> _messages = new();
     private TimeSpan _now;
+    private float _scrapFlash;
+    private float _sparkFlash;
 
     /// <param name="players">The players on this machine</param>
     /// <param name="battlefield">The level being played</param>
@@ -34,6 +36,11 @@ public class HudLayer : Layer
     {
         _players = players ?? throw new ArgumentNullException(nameof(players));
         _battlefield = battlefield ?? throw new ArgumentNullException(nameof(battlefield));
+        _battlefield.Scraplight.Changed += (scrap, sparks) =>
+        {
+            if (scrap > 0) _scrapFlash = 1f;
+            if (sparks > 0) _sparkFlash = 1f;
+        };
         IsPopup = true;
         InputMode = InputMode.None;
     }
@@ -63,6 +70,10 @@ public class HudLayer : Layer
     {
         _now = gameTime.TotalGameTime;
         _messages.RemoveAll(m => _now - m.Shown > MessageDuration);
+
+        float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        _scrapFlash = Math.Max(0f, _scrapFlash - dt * 4f);
+        _sparkFlash = Math.Max(0f, _sparkFlash - dt * 4f);
     }
 
     public override void Draw(GameTime gameTime)
@@ -85,8 +96,24 @@ public class HudLayer : Layer
             : spawner.IsBetweenWaves
                 ? $"\nWave {spawner.Wave} cleared! Next wave in {spawner.TimeUntilNextWave:F0}"
                 : $"\nWave {spawner.Wave} - Enemies left: {spawner.EnemiesRemaining}";
-        SpriteBatch.DrawString(Theme.TitleFont, timerText + playerPosition + waveText, new Vector2(margin, margin),
-            new Color(255, 96, 86) * alpha, 0f, Vector2.Zero, 0.45f, SpriteEffects.None, 0f);
+        const float statusScale = 0.45f;
+        string statusText = timerText + playerPosition + waveText;
+        SpriteBatch.DrawString(Theme.TitleFont, statusText, new Vector2(margin, margin),
+            new Color(255, 96, 86) * alpha, 0f, Vector2.Zero, statusScale, SpriteEffects.None, 0f);
+
+        // The Scraplight counter, under the status text: scrap in steel grey, sparks in green.
+        // Each count flashes white for a moment when it goes up.
+        var scraplight = _battlefield.Scraplight;
+        var counterPosition = new Vector2(margin,
+            margin + Theme.TitleFont.MeasureString(statusText).Y * statusScale + 12f);
+        string scrapText = $"Scrap: {scraplight.Scrap}";
+        var scrapColor = Color.Lerp(new Color(190, 196, 206), Color.White, _scrapFlash);
+        SpriteBatch.DrawString(Theme.TitleFont, scrapText, counterPosition, scrapColor * alpha,
+            0f, Vector2.Zero, statusScale, SpriteEffects.None, 0f);
+        counterPosition.X += Theme.TitleFont.MeasureString(scrapText + "    ").X * statusScale;
+        var sparkColor = Color.Lerp(new Color(90, 255, 110), Color.White, _sparkFlash);
+        SpriteBatch.DrawString(Theme.TitleFont, $"Sparks: {scraplight.Sparks}", counterPosition, sparkColor * alpha,
+            0f, Vector2.Zero, statusScale, SpriteEffects.None, 0f);
 
         // How to pause, in the top right, built from each player's current bindings
         var position = new Vector2(screen.X - margin, margin);

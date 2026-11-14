@@ -55,6 +55,17 @@ public class Builder : ContentBuilder
         content.Include<WildcardRule>("Fonts/*.spritefont");
         content.Include<WildcardRule>("Textures/*.png");
 
+        // 3D models (the Scraplight pickups), imported with Assimp and built as Models. Each is
+        // centred on its origin with its largest side 2 units long; their textures are loaded
+        // separately (from Textures/Pickups/) and set on the models' effects in code.
+        // FbxImporter (despite the name) reads .obj files too, through the same Assimp importer,
+        // but in its XNA-compatible mode, which turns materials into BasicMaterialContent. The
+        // plain OpenAssetImporter leaves them as generic MaterialContent, which the game can't
+        // load at runtime ("Could not find ContentTypeReader ... MaterialContent").
+        foreach (var model in new[] { "scrap_gear", "scrap_propeller",
+            "spark_block", "spark_hip", "spark_kick", "spark_bomb", "spark_nuke", "spark_orb" })
+            content.Include($"Models/{model}.obj", new FbxImporter(), new ModelProcessor());
+
         // Both sound effects and music are built as SoundEffects (.wav files import that way by
         // default), so music tracks can be cross-faded by the CIS580.Audio music player.
         content.Include<WildcardRule>("Audio/Sfx/*.wav");
