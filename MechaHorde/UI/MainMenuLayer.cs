@@ -20,7 +20,7 @@ public class MainMenuLayer : MechaMenuLayer
     /// </param>
     /// <param name="onExit">Called when the player confirms they want to exit</param>
     public MainMenuLayer(Action<InputSource> onPlay, Action<InputSource> onLocalMultiplayer, Action onExit)
-        : base("MECHA HORDE")
+        : base("MECHAHORDE")
     {
         _onExit = onExit;
 

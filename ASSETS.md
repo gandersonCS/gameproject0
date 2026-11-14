@@ -5,9 +5,12 @@ Content assets live in `MechaHorde.Content/Assets/`.
 
 ## Textures
 
-- `Textures/Sprites/Sara/SaraMain.png`, `Textures/Sprites/Sara/SaraShooting.png` - "Space Sara"
-  (no helmet) main and shooting frames, created by Emcee Flesher (+ansimuz) of OpenGameArt,
-  released under OGA-BY 3.0+ (as credited on the sheets). TODO: add the OpenGameArt page link
+- `Textures/Sprites/Sara/SaraMain.png`, `Textures/Sprites/Sara/SaraShooting.png` - "Space Sara!"
+  (no helmet) main and shooting frames (`warpsara-nohelmet-anim-sheet-alpha.png`,
+  `warpsara-nohelmet-shooting-sheet-alpha.png`), created by Emcee Flesher of OpenGameArt
+  [https://opengameart.org/content/space-sara](https://opengameart.org/content/space-sara),
+  released under OGA-BY 3.0. Based on an original character by ansimuz (CC0)
+  [https://opengameart.org/content/warped-caves-pixel-art-pack](https://opengameart.org/content/warped-caves-pixel-art-pack)
 - `Textures/Sprites/M484SpaceSoldier.png` - created by Master484 of OpenGameArt
   [https://opengameart.org/content/space-soldier-m484-games](https://opengameart.org/content/space-soldier-m484-games),
   released under the public domain
@@ -22,11 +25,18 @@ Content assets live in `MechaHorde.Content/Assets/`.
   [https://opengameart.org/content/warped-city](https://opengameart.org/content/warped-city),
   released under the public domain
 - `Textures/Sprites/OpenGunnerMechs.png`, `Textures/Sprites/Enemies/GreenMech.png` (the green mech
-  frames cut from it) - Open Gunner Mechs, created by Master484 of OpenGameArt, released under CC-BY 3.0
-- `Textures/Sprites/Enemies/RobotGunner.png` - the robot gunner frames (robotgunner.zip) packed into
-  one sheet. TODO: author, link and license
-- `Textures/Sprites/Enemies/SecuriBot.png` - the Securi-Bot frames (securityrobot.png) packed into
-  one sheet. TODO: author, link and license
+  frames cut from it) - `OpenGunnerMechs.png` from the "Open Gunner Starter Kit", created by Master484
+  of OpenGameArt [https://opengameart.org/content/open-gunner-starter-kit](https://opengameart.org/content/open-gunner-starter-kit),
+  released under CC-BY 3.0 / OGA-BY 3.0
+- `Textures/Sprites/Enemies/RobotGunner.png` - the robot gunner frames (`robotgunner.zip`) packed into
+  one sheet, from "Mannyquest Robot Gunner", created by Suppercut of OpenGameArt
+  [https://opengameart.org/content/mannyquest-robot-gunner](https://opengameart.org/content/mannyquest-robot-gunner),
+  released under CC0 (public domain)
+- `Textures/Sprites/Enemies/SecuriBot.png` - the Securi-Bot frames (`securityrobot.png`) packed into
+  one sheet, from "Security Robot", created by NARFNra of OpenGameArt
+  [https://opengameart.org/content/security-robot](https://opengameart.org/content/security-robot),
+  released under CC-BY-SA 3.0. Because of share-alike, this repacked sheet is also released under
+  CC-BY-SA 3.0
 - `Textures/Effects/drop.png` - rain drop particle
 - `Textures/Pickups/spark_block.png` - the spark's texture: the "punch" block's ambient occlusion
   (`punch_a.png`) on dark metal, with its glow (`punch_emit.png`) added on top, from the Block Pack
@@ -36,9 +46,14 @@ Content assets live in `MechaHorde.Content/Assets/`.
 
 ## Models
 
-- `Models/scrap_gear.obj`, `Models/scrap_propeller.obj` - "BrokenGear" and "BrokenPropellor", made in
-  Art of Illusion 2.8.1 (2011). Centred, scaled so their largest side is 2 units, and triangulated
-  (with flat normals added to the gear) for the game. TODO: author, link and license
+- `Models/scrap_gear.obj` - `brokengear.obj` from "Broken gear", created by Savino of OpenGameArt
+  [https://opengameart.org/content/broken-gear](https://opengameart.org/content/broken-gear),
+  released under CC0 (public domain)
+- `Models/scrap_propeller.obj` - `brokenpropellor.obj` from "Propellor", created by Savino of
+  OpenGameArt [https://opengameart.org/content/propellor](https://opengameart.org/content/propellor),
+  released under CC0 (public domain)
+- Both were made in Art of Illusion 2.8.1 (2011). Centred, scaled so their largest side is 2 units,
+  and triangulated (with flat normals added to the gear) for the game.
 - `Models/spark_hip.obj`, `spark_kick.obj`, `spark_bomb.obj`, `spark_nuke.obj`, `spark_orb.obj` -
   `block-hip.fbx`, `block-kick.fbx`, `bomb.fbx`, `nuke.fbx` and `orb.fbx` from the Block Pack, converted
   the same way as `spark_block.obj` below, with matching textures in `Textures/Pickups/` (each made
@@ -59,16 +74,25 @@ Content assets live in `MechaHorde.Content/Assets/`.
 
 ## Audio
 
-- `Audio/Music/uprising_intro.ogg`, `Audio/Music/uprising_loop.ogg` - cut from 'Uprising' by
-  Scott Buckley – released under CC-BY 4.0. www.scottbuckley.com.au
-- `Audio/Music/emergent_loop.ogg` - cut from 'Emergent' by Scott Buckley – released under
-  CC-BY 4.0. www.scottbuckley.com.au
+- `Audio/Music/uprising_intro.ogg`, `Audio/Music/uprising_loop.ogg` (main menu) - edited from:
+
+  > 'Uprising' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+
+  [https://www.scottbuckley.com.au/library/uprising](https://www.scottbuckley.com.au/library/uprising)
+  (CC-BY 4.0: [https://creativecommons.org/licenses/by/4.0/](https://creativecommons.org/licenses/by/4.0/)).
+  Changes: cut into an intro and a loop; the heroic section was removed.
+- `Audio/Music/emergent_loop.ogg` (pause screen) - edited from:
+
+  > 'Emergent' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+
   [https://www.scottbuckley.com.au/library/emergent](https://www.scottbuckley.com.au/library/emergent)
-- `Audio/Music/calamity_intro.ogg`, `Audio/Music/calamity_loop.ogg` - cut from "Calamity (Epic
-  Orchestral Metal)" by Esiltir of OpenGameArt
-  [https://opengameart.org/node/74577](https://opengameart.org/node/74577),
-  released under Creative Commons Attribution 4.0 (CC-BY 4.0). (The author asks to be sent a
-  message about games that use it.)
+  (CC-BY 4.0: [https://creativecommons.org/licenses/by/4.0/](https://creativecommons.org/licenses/by/4.0/)).
+  Changes: cut into a loop.
+- `Audio/Music/calamity_intro.ogg`, `Audio/Music/calamity_loop.ogg` (gameplay) - edited from
+  "Calamity (Epic Orchestral Metal)" by Esiltir of OpenGameArt
+  [https://opengameart.org/content/calamity-epic-orchestral-metal](https://opengameart.org/content/calamity-epic-orchestral-metal),
+  released under CC-BY 4.0. Changes: cut into an intro and a loop. (The author asks to be credited
+  and sent a message about games that use it.)
 - `Audio/Music/promise.wav` (no longer played) - created by hothxcc of OpenGameArt
   [https://opengameart.org/content/promise](https://opengameart.org/content/promise),
   released under the public domain
@@ -113,6 +137,29 @@ heavy clangs were trimmed and faded from the cast iron recordings):
   by HaelDB to OpenGameArt [https://opengameart.org/content/osare-10-sound-pack](https://opengameart.org/content/osare-10-sound-pack),
   released under CC-BY 3.0 (the page no longer shows its author or license; archived copies list
   CC-BY 3.0)
+
+## Downloaded, not yet in the game
+
+These came from the OpenGameArt collection (see its CREDITS.TXT). They aren't in
+`MechaHorde.Content/Assets/` yet; move an entry up to its section above when you add the asset.
+
+| Asset | Author | License | Notes |
+|---|---|---|---|
+| [Warped City 2](https://opengameart.org/content/warped-city-2) | ansimuz | CC0 | Credit optional ("by Ansimuz") |
+| [Space Sara!](https://opengameart.org/content/space-sara) helmet sheets | Emcee Flesher | OGA-BY 3.0 | Based on ansimuz's character (CC0) |
+| [Platform Shmup Hero: Warpgal](https://opengameart.org/content/platform-shmup-hero-warpgal) | Emcee Flesher | OGA-BY 3.0 / CC0 | Original character by ansimuz (CC0) |
+| [Super Dead Space Gunner Merc Redux](https://opengameart.org/content/super-dead-space-gunner-merc-redux-platform-shmup-hero) | Emcee Flesher | CC-BY 4.0 | |
+| [Open Gunner Starter Kit](https://opengameart.org/content/open-gunner-starter-kit) (other sheets) | Master484 | CC-BY 3.0 / OGA-BY 3.0 | |
+| [mech(skeletal)](https://opengameart.org/content/mechskeletal) | Centurion_of_war | CC-BY 4.0 | |
+| [Mech-48x48](https://opengameart.org/content/mech-48x48) | Redshrike | CC0 | |
+| [Side robot with a gun](https://opengameart.org/content/side-robot-with-a-gun) | TheNess | CC0 | |
+| [Big Red Mecha](https://opengameart.org/content/big-red-mecha) | DieMango | CC-BY 4.0 | |
+| [Space Dimensions (8bit/Retro Version)](https://opengameart.org/content/space-dimensions-8bitretro-version) | Matthew Pablo | CC-BY 3.0 | Follow his attribution instructions: [matthewpablo.com/services](http://www.matthewpablo.com/services) |
+| [Theme of Com-Mecha](https://opengameart.org/content/theme-of-com-mecha) | Matthew Pablo | CC-BY 3.0 | Same as above |
+| [red engines blue wings & boss_battle_06_alternate](https://opengameart.org/content/red-engines-blue-wings-bossbattle06alternate-zhelanov-vs-nene) | glitchart | CC-BY 4.0 | Remix of "red engines blue wings" by Zhelanov (CC-BY 4.0) and "boss_battle_06_alternate" by nene (CC0) |
+| [Kick their ass and Curse of the Moon](https://opengameart.org/content/kick-their-ass-and-curse-of-the-moon-zhelanov-vs-vitalezzz) | glitchart | CC-BY 3.0 | Remix of "Kick their ass" by Alexandr Zhelanov (CC-BY 3.0) and "Curse of the Moon" by vitalezzz (CC0) |
+| [Extreme Binary DnB](https://opengameart.org/content/extreme-binary-dnb) | Gobusto | CC-BY-SA 3.0 | |
+| [Laser shot](https://opengameart.org/content/laser-shot) | Gumichan01 | CC-BY-SA 3.0 | Credit as "Gumichan01" |
 
 ## Code
 

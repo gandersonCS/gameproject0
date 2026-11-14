@@ -153,26 +153,57 @@ public class PickupSystem
     public void Clear() => _pickups.Clear();
 
     /// <summary>
-    /// Draws the sparks' glow (call inside the level's SpriteBatch, before the models)
+    /// Draws the soft halos behind the pickups (call inside an additive SpriteBatch with the
+    /// level's transform, before the models): a faint white "pick me up" glow behind scrap,
+    /// and an arc-reactor glow behind sparks, in layers: a wide colored haze, a strong colored
+    /// ring, and a near-white hot core, all beating like a heart.
     /// </summary>
     public void DrawGlow(SpriteBatch spriteBatch)
     {
         foreach (var pickup in _pickups)
         {
-            if (pickup.Kind != PickupKind.Spark || !pickup.IsVisible)
+            if (!pickup.IsVisible)
                 continue;
-            float pulse = 0.55f + 0.25f * MathF.Sin(pickup.Age * 4f);
-            float size = pickup.Size * 3.2f;
             var center = pickup.Position + new Vector2(0, pickup.Bob);
-            var glow = SparkStyles[pickup.Style].Glow;
-            spriteBatch.Draw(_glow, center, null, new Color(glow) * pulse, 0f,
-                new Vector2(_glow.Width / 2f, _glow.Height / 2f), size / _glow.Width, SpriteEffects.None, 0f);
+
+            if (pickup.Kind == PickupKind.Spark)
+            {
+                var color = SparkStyles[pickup.Style].Glow;
+                float beat = Heartbeat(pickup.Age);
+                Glow(spriteBatch, center, pickup.Size * 9f, color, 0.35f + 0.15f * beat);
+                Glow(spriteBatch, center, pickup.Size * 4f, color, 0.8f + 0.2f * beat);
+                Glow(spriteBatch, center, pickup.Size * 2f, Vector3.Lerp(color, Vector3.One, 0.65f), 0.8f + 0.2f * beat);
+            }
+            else
+            {
+                float shimmer = 0.5f + 0.5f * MathF.Sin(pickup.Age * 5f + pickup.Position.X);
+                Glow(spriteBatch, center, pickup.Size * 2.8f, Vector3.One, 0.22f + 0.12f * shimmer);
+            }
         }
+    }
+
+    private void Glow(SpriteBatch spriteBatch, Vector2 center, float size, Vector3 color, float strength) =>
+        spriteBatch.Draw(_glow, center, null, new Color(color) * strength, 0f,
+            new Vector2(_glow.Width / 2f, _glow.Height / 2f), size / _glow.Width, SpriteEffects.None, 0f);
+
+    /// <summary>
+    /// A heartbeat: two quick pulses, then a rest (0 to 1), for the sparks
+    /// </summary>
+    private static float Heartbeat(float time)
+    {
+        float t = time * 1.2f % 1f;
+        float beat = MathF.Exp(-MathF.Pow((t - 0.1f) / 0.05f, 2f)) + 0.6f * MathF.Exp(-MathF.Pow((t - 0.3f) / 0.05f, 2f));
+        return MathF.Min(1f, beat);
     }
 
     /// <summary>
     /// Draws the pickups' 3D models (call between SpriteBatches, not inside one)
     /// </summary>
+    /// <remarks>
+    /// Each model is drawn twice. First its glowing outline: the model scaled up a little,
+    /// unlit, in a flat color, added onto the screen (white for scrap, the spark's color for
+    /// sparks). Then the model itself, lit, over the top, so only the rim of the outline shows.
+    /// </remarks>
     /// <param name="levelScale">How many screen pixels a level pixel covers</param>
     /// <param name="levelOffset">Where level (0, 0) is on screen</param>
     public void DrawModels(float levelScale, Vector2 levelOffset)
@@ -191,46 +222,57 @@ public class PickupSystem
         float depth = 64f * levelScale;
         var projection = Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, -depth, depth);
 
-        // SpriteBatch leaves its own states set; the models need depth testing and culling
-        _graphics.Clear(ClearOptions.DepthBuffer, Color.Transparent, 1f, 0);
-        _graphics.BlendState = BlendState.Opaque;
-        _graphics.DepthStencilState = DepthStencilState.Default;
         // The flips between the model's space and the screen's make the triangles' winding hard
-        // to reason about; the models are closed, so drawing both sides with depth testing looks the same
+        // to reason about; the models are closed, so drawing both sides looks the same
         _graphics.RasterizerState = RasterizerState.CullNone;
         _graphics.SamplerStates[0] = SamplerState.LinearWrap;
 
+        // Pass 1: the outlines, added onto the screen, without depth (they're glow, not solid)
+        _graphics.BlendState = BlendState.Additive;
+        _graphics.DepthStencilState = DepthStencilState.None;
         foreach (var pickup in _pickups)
         {
             if (!pickup.IsVisible)
                 continue;
-
-            Model model = pickup.Kind switch
+            bool isSpark = pickup.Kind == PickupKind.Spark;
+            var model = ModelFor(pickup);
+            if (isSpark)
             {
-                PickupKind.ScrapGear => _gear,
-                PickupKind.ScrapPropeller => _propeller,
-                _ => _sparks[pickup.Style]
-            };
-
-            // The model is 2 units across, so half its size scales it to Size level pixels.
-            // Y is flipped: the level's Y points down, the model's up.
-            float half = pickup.Size / 2f;
-            Matrix world = pickup.Rotation
-                * Matrix.CreateScale(half, -half, half)
-                * Matrix.CreateTranslation(pickup.Position.X, pickup.Position.Y + pickup.Bob, 0f)
-                * levelToScreen;
-
-            if (pickup.Kind == PickupKind.Spark)
-            {
-                // The spark's glow pulses
-                float pulse = 0.25f + 0.2f * MathF.Sin(pickup.Age * 4f);
-                foreach (var mesh in model.Meshes)
-                    foreach (var effect in mesh.Effects)
-                        if (effect is BasicEffect basic)
-                            basic.EmissiveColor = SparkStyles[pickup.Style].Glow * pulse;
+                var color = SparkStyles[pickup.Style].Glow;
+                float beat = Heartbeat(pickup.Age);
+                DrawFlat(model, World(pickup, 1.45f, levelToScreen), projection, color * (0.35f + 0.25f * beat));
+                DrawFlat(model, World(pickup, 1.2f, levelToScreen), projection, Vector3.Lerp(color, Vector3.One, 0.4f) * (0.7f + 0.3f * beat));
             }
+            else
+            {
+                float shimmer = 0.5f + 0.5f * MathF.Sin(pickup.Age * 5f + pickup.Position.X);
+                DrawFlat(model, World(pickup, 1.3f, levelToScreen), projection, new Vector3(0.55f + 0.25f * shimmer));
+            }
+        }
 
-            model.Draw(world, Matrix.Identity, projection);
+        // Pass 2: the models themselves, solid and lit
+        _graphics.Clear(ClearOptions.DepthBuffer, Color.Transparent, 1f, 0);
+        _graphics.BlendState = BlendState.Opaque;
+        _graphics.DepthStencilState = DepthStencilState.Default;
+        foreach (var pickup in _pickups)
+        {
+            if (!pickup.IsVisible)
+                continue;
+            var model = ModelFor(pickup);
+            bool isSpark = pickup.Kind == PickupKind.Spark;
+            Vector3 emissive;
+            if (isSpark)
+            {
+                // Arc reactor: lit from inside, so it glows brightly whatever light falls on it
+                emissive = SparkStyles[pickup.Style].Glow * (0.7f + 0.3f * Heartbeat(pickup.Age));
+            }
+            else
+            {
+                // Polished scrap: a little light of its own, with a slow shimmer
+                float shimmer = 0.5f + 0.5f * MathF.Sin(pickup.Age * 5f + pickup.Position.X);
+                emissive = new Vector3(0.18f + 0.1f * shimmer);
+            }
+            DrawLit(model, World(pickup, 1f, levelToScreen), projection, emissive, isSpark);
         }
 
         // Put back what SpriteBatch expects to find (it sets these itself on Begin, but other
@@ -239,6 +281,69 @@ public class PickupSystem
         _graphics.RasterizerState = RasterizerState.CullCounterClockwise;
         _graphics.BlendState = BlendState.AlphaBlend;
         _graphics.SamplerStates[0] = SamplerState.LinearClamp;
+    }
+
+    private Model ModelFor(Pickup pickup) => pickup.Kind switch
+    {
+        PickupKind.ScrapGear => _gear,
+        PickupKind.ScrapPropeller => _propeller,
+        _ => _sparks[pickup.Style]
+    };
+
+    /// <summary>
+    /// Where a pickup's model is drawn, scaled by <paramref name="grow"/> (for the outlines)
+    /// </summary>
+    private static Matrix World(Pickup pickup, float grow, Matrix levelToScreen)
+    {
+        // The model is 2 units across, so half its size scales it to Size level pixels.
+        // Y is flipped: the level's Y points down, the model's up.
+        float half = pickup.Size / 2f * grow;
+        return pickup.Rotation
+            * Matrix.CreateScale(half, -half, half)
+            * Matrix.CreateTranslation(pickup.Position.X, pickup.Position.Y + pickup.Bob, 0f)
+            * levelToScreen;
+    }
+
+    /// <summary>
+    /// Draws a model unlit in one flat color (for the glowing outlines)
+    /// </summary>
+    private static void DrawFlat(Model model, Matrix world, Matrix projection, Vector3 color)
+    {
+        foreach (var mesh in model.Meshes)
+        {
+            foreach (var effect in mesh.Effects)
+            {
+                if (effect is BasicEffect basic)
+                {
+                    basic.LightingEnabled = false;
+                    basic.TextureEnabled = false;
+                    basic.DiffuseColor = color;
+                    basic.EmissiveColor = Vector3.Zero;
+                }
+            }
+        }
+        model.Draw(world, Matrix.Identity, projection);
+    }
+
+    /// <summary>
+    /// Draws a model lit (and textured, for a spark), with some light of its own
+    /// </summary>
+    private static void DrawLit(Model model, Matrix world, Matrix projection, Vector3 emissive, bool isSpark)
+    {
+        foreach (var mesh in model.Meshes)
+        {
+            foreach (var effect in mesh.Effects)
+            {
+                if (effect is BasicEffect basic)
+                {
+                    basic.LightingEnabled = true;
+                    basic.TextureEnabled = isSpark;
+                    basic.DiffuseColor = isSpark ? Vector3.One : ScrapColor;
+                    basic.EmissiveColor = emissive;
+                }
+            }
+        }
+        model.Draw(world, Matrix.Identity, projection);
     }
 
     /// <summary>
@@ -284,8 +389,8 @@ public class PickupSystem
             // Bare metal: grey, with sharp bright highlights
             effect.TextureEnabled = false;
             effect.DiffuseColor = ScrapColor;
-            effect.SpecularColor = new Vector3(0.9f);
-            effect.SpecularPower = 18f;
+            effect.SpecularColor = new Vector3(1f);
+            effect.SpecularPower = 24f;
             effect.EmissiveColor = Vector3.Zero;
         }
     }
